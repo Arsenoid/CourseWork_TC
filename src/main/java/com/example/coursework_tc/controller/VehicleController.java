@@ -1,5 +1,6 @@
 package com.example.coursework_tc.controller;
 
+import com.example.coursework_tc.model.User;
 import com.example.coursework_tc.model.Vehicle;
 import com.example.coursework_tc.service.VehicleService;
 import lombok.RequiredArgsConstructor;
@@ -27,10 +28,11 @@ public class VehicleController {
     }
 
     @GetMapping("/{vin}")
-    public String getVehicleDetails(@PathVariable String vin, Model model) {
+    public String getVehicleDetails(Principal principal, @PathVariable String vin, Model model) {
         Vehicle vehicle = service.findVehicleByVin(vin);
         model.addAttribute("images", vehicle.getImages());
         model.addAttribute("vehicle", vehicle);
+        model.addAttribute("user", service.getUserByPrincipal(principal));
         return "vehicle-details";
     }
 

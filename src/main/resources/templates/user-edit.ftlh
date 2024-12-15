@@ -100,51 +100,17 @@
 <body>
 <div class="container">
     <h1>Транспорт</h1>
-    <#if user.email??>
-        <h2>Имя пользователя: <i>${user.username}</i></h2>
-        <form class="logout-form" action="/logout" method="post">
-            <input type="hidden" name="_csrf" value="${_csrf.token}">
-            <input type="submit" value="Выйти"/>
-        </form>
-        <#if user.isAdmin()>
-            <a href="/admin">Панель администратора</a>
-        </#if>
-    <#else>
-        <a href="/login">Войти</a>
-    </#if>
-    <hr>
-    <form action="/vehicles" method="get">
-        Поиск по модели авто: <input type="text" name="car_model"><br>
-        <input type="submit" value="Поиск">
-    </form>
-    <div class="vehicle-list">
-        <#list vehicles as vehicle>
-            <div class="vehicle-item">
-                <p><b>${vehicle.model}</b></p>
-                <p><b>VIN:</b> ${vehicle.vin} | <a href="vehicles/${vehicle.vin}">Подробнее...</a></p>
+    <h4>Редактирование пользователя ${user.username}</h4>
+    <form action="/admin/user/edit" method="post">
+        <#list roles as role>
+            <div>
+                <label><input type="checkbox" name="${role}" ${user.roles?seq_contains(role)?string("checked", "")}>${role}</label>
             </div>
-        <#else>
-            <h3>Нет подходящего транспорта</h3>
         </#list>
-    </div>
-    <hr>
-    <#if user.email??>
-        <h3>Добавить новый транспорт</h3>
-        <form class="add-vehicle-form" action="/vehicles/add_vehicle" method="post" enctype="multipart/form-data">
-            VIN: <input type="text" name="vin"><br><br>
-            Модель: <input type="text" name="model"><br><br>
-            Фото: <input type="file" name="file1"><br><br>
-            Фото: <input type="file" name="file2"><br><br>
-            Фото: <input type="file" name="file3"><br><br>
-            Год выпуска: <input type="number" name="manufacture_year"><br><br>
-            Номерной знак: <input type="text" name="registration"><br><br>
-            Тип топлива: <input type="text" name="fuel_type"><br><br>
-            Вместимость: <input type="number" name="capacity"><br><br>
-            Статус: <input type="text" name="status"><br><br>
-            <input type="hidden" name="_csrf" value="${_csrf.token}">
-            <input type="submit" value="Добавить товар">
-        </form>
-    </#if>
+        <input type="hidden" value="${user.id}" name="userId">
+        <input type="hidden" value="${_csrf.token}" name="_csrf">
+        <button type="submit">Сохранить</button>
+    </form>
 </div>
 </body>
 </html>

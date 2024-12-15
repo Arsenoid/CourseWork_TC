@@ -100,51 +100,39 @@
 <body>
 <div class="container">
     <h1>Транспорт</h1>
-    <#if user.email??>
-        <h2>Имя пользователя: <i>${user.username}</i></h2>
-        <form class="logout-form" action="/logout" method="post">
-            <input type="hidden" name="_csrf" value="${_csrf.token}">
-            <input type="submit" value="Выйти"/>
-        </form>
-        <#if user.isAdmin()>
-            <a href="/admin">Панель администратора</a>
-        </#if>
-    <#else>
-        <a href="/login">Войти</a>
-    </#if>
-    <hr>
-    <form action="/vehicles" method="get">
-        Поиск по модели авто: <input type="text" name="car_model"><br>
-        <input type="submit" value="Поиск">
-    </form>
-    <div class="vehicle-list">
-        <#list vehicles as vehicle>
-            <div class="vehicle-item">
-                <p><b>${vehicle.model}</b></p>
-                <p><b>VIN:</b> ${vehicle.vin} | <a href="vehicles/${vehicle.vin}">Подробнее...</a></p>
-            </div>
+    <h4>Панель администратора</h4>
+    <table border="1">
+        <tr>
+            <th>Email</th>
+            <th>Активность</th>
+            <th>Роли</th>
+            <th>Бан</th>
+            <th>Редактирование роли</th>
+            <th>Подробная информация</th>
+        </tr>
+        <#list users as user>
+            <tr>
+                <th>${user.email}</th>
+                <th><#if user.active>true<#else>false</#if></th>
+                <th><#list user.roles as role>${role}<#sep>, </#list></th>
+                <th>
+                    <form action="/admin/user/ban/${user.id}" method="post">
+                        <input type="hidden" name="_csrf" value="${_csrf.token}">
+                        <#if user.isActive()>
+                            <input type="submit" value="Забанить">
+                        <#else>
+                            <input type="submit" value="Разбанить">
+                        </#if>
+                    </form>
+                </th>
+                <th><a href="/admin/user/edit/${user.id}">Редактирование</a></th>
+                <th><a href="/user/${user.id}">Подробная информация</a></th>
+            </tr>
         <#else>
-            <h3>Нет подходящего транспорта</h3>
+            <h3>Пользователей нет</h3>
         </#list>
-    </div>
-    <hr>
-    <#if user.email??>
-        <h3>Добавить новый транспорт</h3>
-        <form class="add-vehicle-form" action="/vehicles/add_vehicle" method="post" enctype="multipart/form-data">
-            VIN: <input type="text" name="vin"><br><br>
-            Модель: <input type="text" name="model"><br><br>
-            Фото: <input type="file" name="file1"><br><br>
-            Фото: <input type="file" name="file2"><br><br>
-            Фото: <input type="file" name="file3"><br><br>
-            Год выпуска: <input type="number" name="manufacture_year"><br><br>
-            Номерной знак: <input type="text" name="registration"><br><br>
-            Тип топлива: <input type="text" name="fuel_type"><br><br>
-            Вместимость: <input type="number" name="capacity"><br><br>
-            Статус: <input type="text" name="status"><br><br>
-            <input type="hidden" name="_csrf" value="${_csrf.token}">
-            <input type="submit" value="Добавить товар">
-        </form>
-    </#if>
+    </table>
+
 </div>
 </body>
 </html>

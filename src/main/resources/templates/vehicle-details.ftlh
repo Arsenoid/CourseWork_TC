@@ -75,6 +75,18 @@
         button:hover {
             background-color: #218838;
         }
+
+        .delete-button {
+            background-color: #dc3545; /* Красный цвет для кнопки удаления */
+            border-radius: 4px; /* Скругленные углы */
+            padding: 10px 20px;
+            margin-top: 10px;
+        }
+
+        .delete-button:hover {
+            background-color: #c82333; /* Темнее при наведении */
+        }
+
     </style>
 </head>
 <body>
@@ -93,8 +105,13 @@
         <p><strong>Fuel Type:</strong> ${vehicle.fuel_type}</p>
         <p><strong>Capacity:</strong> ${vehicle.capacity}</p>
         <p><strong>Status:</strong> ${vehicle.status}</p>
-        <p><strong>Owner:</strong> ${vehicle.user.username}</p>
-        <p><strong>Owner email:</strong> ${vehicle.user.email}</p>
+        <p><strong>Owner:</strong> <a href="/user/${vehicle.user.id}">${vehicle.user.username}</a></p>
+        <#if user.id == vehicle.user.id>
+            <form action="/vehicles/delete_vehicle/${vehicle.id}" method="post">
+                <input type="hidden" name="_csrf" value="${_csrf.token}">
+                <input type="submit" class="delete-button" value="Удалить авто"/>
+            </form>
+        </#if>
     </div>
     <button onclick="window.location.href='/vehicles'">Back to List</button>
 </div>

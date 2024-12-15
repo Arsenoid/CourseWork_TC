@@ -91,7 +91,9 @@ public class VehicleServiceImpl implements VehicleService {
     @Override
     @Transactional
     public void deleteById(Long id) {
+        log.info("Deleted vehicle: {}", vehicleRepository.findById(id).get().getModel());
         vehicleRepository.deleteById(id);
+
     }
 
 }

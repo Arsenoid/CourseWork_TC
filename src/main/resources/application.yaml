@@ -17,5 +17,9 @@ spring:
         format_sql: true
   freemarker:
     expose-request-attributes: true
+  servlet:
+    multipart:
+      max-file-size: 100MB
+      max-request-size: 80MB
 server:
   port: 8080
