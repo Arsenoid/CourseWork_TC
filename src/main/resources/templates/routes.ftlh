@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Vehicles Management</title>
+    <title>BLizzard Trans</title>
     <link rel="stylesheet" href="/css/base.css">
     <style>
         body {
@@ -32,7 +32,7 @@
             margin-top: 20px;
         }
 
-        .vehicle-item {
+        .route-item {
             border: 1px solid #ccc;
             padding: 15px;
             margin-bottom: 15px;
@@ -41,17 +41,17 @@
             box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
         }
 
-        .vehicle-item p {
+        .route-item p {
             margin: 5px 0;
             font-size: 16px;
         }
 
-        .vehicle-item a {
+        .route-item a {
             color: #007bff;
             text-decoration: none;
         }
 
-        .vehicle-item a:hover {
+        .route-item a:hover {
             text-decoration: underline;
         }
 
@@ -92,25 +92,55 @@
             margin-bottom: 20px;
         }
 
-        .add-vehicle-form {
+        .add-route-form {
             text-align: center;
         }
     </style>
 </head>
 <body>
 <div class="container">
-    <h1>Транспорт</h1>
-    <h4>Редактирование пользователя ${user.username}</h4>
-    <form action="/admin/user/edit" method="post">
-        <#list roles as role>
-            <div>
-                <label><input type="checkbox" name="${role}" ${user.roles?seq_contains(role)?string("checked", "")}>${role}</label>
+    <h1>Маршруты</h1>
+    <#if user.email??>
+        <h2>Имя пользователя: <i>${user.username}</i></h2>
+        <form class="logout-form" action="/logout" method="post">
+            <input type="hidden" name="_csrf" value="${_csrf.token}">
+            <input type="submit" value="Выйти"/>
+        </form>
+        <#if user.isAdmin()>
+            <a href="/admin">Панель администратора</a>
+        </#if>
+    <#else>
+        <a href="/login">Войти</a>
+    </#if>
+    <hr>
+<#--    <form action="/vehicles" method="get">-->
+<#--        Поиск по модели авто: <input type="text" name="car_model"><br>-->
+<#--        <input type="submit" value="Поиск">-->
+<#--    </form>-->
+    <div class="route-list">
+        <#list routes as route>
+            <div class="route-item">
+                <p><b>${route.startLocation} - ${route.endLocation}</b></p>
+                <p><b>Создан:</b> ${route.formattedCreatedAt} | <a href="/${route.id}">Подробнее...</a></p>
             </div>
+        <#else>
+            <h3>Нет пердложений</h3>
         </#list>
-        <input type="hidden" value="${user.id}" name="userId">
-        <input type="hidden" value="${_csrf.token}" name="_csrf">
-        <button type="submit">Сохранить</button>
-    </form>
+    </div>
+    <hr>
+    <#if user.email??>
+        <h3>Добавить новый маршрут</h3>
+        <form class="add-route-form" action="/add_route" method="post" enctype="multipart/form-data">
+            Начальная точка: <input type="text" name="startLocation"><br><br>
+            Конечная точка: <input type="text" name="endLocation"><br><br>
+            Расстояние: <input type="number" name="distance"><br><br>
+            Описание груза: <input type="text" name="cargo_description"><br><br>
+            Масса груза: <input type="number" name="cargo_weight"><br><br>
+            Оплата: <input type="number" name="payment"><br><br>
+            <input type="hidden" name="_csrf" value="${_csrf.token}">
+            <input type="submit" value="Добавить маршрут">
+        </form>
+    </#if>
 </div>
 </body>
 </html>

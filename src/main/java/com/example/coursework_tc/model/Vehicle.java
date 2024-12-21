@@ -2,7 +2,6 @@ package com.example.coursework_tc.model;
 
 import lombok.Data;
 import jakarta.persistence.*;
-//import javax.persistence.*;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -19,9 +18,9 @@ public class Vehicle {
     private String model;
     @Column(nullable = false)
     private int manufacture_year;
-    private String registration;
+    private String license_plate;
     private String fuel_type;
-    private String capacity;
+    private Double load_capacity;
     private String status;
 
     @OneToMany(cascade = CascadeType.ALL, fetch = FetchType.LAZY, mappedBy = "vehicle")

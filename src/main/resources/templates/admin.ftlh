@@ -28,7 +28,7 @@
             color: #333;
         }
 
-        .vehicle-list {
+        .route-list {
             margin-top: 20px;
         }
 

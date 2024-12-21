@@ -6,6 +6,7 @@ import lombok.Data;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.*;
 
@@ -17,11 +18,14 @@ public class User implements UserDetails {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
     private String username;
+    private LocalDate dateOfBirth;
     @Column(unique = true)
     private String email;
+    @Column(unique = true)
+    private String tel_number;
+    private int experience;
     private boolean active;
-    @OneToOne(cascade = CascadeType.ALL, fetch = FetchType.EAGER)
-    @JoinColumn(name = "image_id")
+    @OneToOne(cascade = CascadeType.ALL, mappedBy = "user")
     private Image avatar;
     @Column(length = 1000)
     private String password;
@@ -33,6 +37,13 @@ public class User implements UserDetails {
 
     @OneToMany(cascade = CascadeType.ALL, fetch = FetchType.EAGER, mappedBy = "user")
     private List<Vehicle> vehicles = new ArrayList<>();
+
+    @OneToMany(cascade = CascadeType.ALL, fetch = FetchType.EAGER, mappedBy = "client")
+    private List<Order> orders = new ArrayList<>();
+
+    @OneToMany(cascade = CascadeType.ALL, fetch = FetchType.LAZY, mappedBy = "customer")
+    private List<Route> routes = new ArrayList<>();
+
     private LocalDateTime createdAt;
 
     @PrePersist

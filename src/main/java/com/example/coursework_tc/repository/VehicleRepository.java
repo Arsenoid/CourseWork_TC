@@ -9,8 +9,6 @@ public interface VehicleRepository extends JpaRepository<Vehicle, Long> {
 
     void deleteByVin(String vin);
 
-    void deleteById(Long id);
-
     Vehicle findByVin(String vin);
 
     List<Vehicle> findByModel(String car_model);
