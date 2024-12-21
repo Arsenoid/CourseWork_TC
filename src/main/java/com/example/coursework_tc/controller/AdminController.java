@@ -2,7 +2,7 @@ package com.example.coursework_tc.controller;
 
 import com.example.coursework_tc.model.User;
 import com.example.coursework_tc.model.enums.Role;
-import com.example.coursework_tc.service.Impl.UserService;
+import com.example.coursework_tc.service.Impl.UserServiceImpl;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Controller;
@@ -17,7 +17,7 @@ import java.util.Map;
 @RequiredArgsConstructor
 @PreAuthorize("hasAuthority('ROLE_ADMIN')")
 public class AdminController {
-    private final UserService userService;
+    private final UserServiceImpl userService;
 
     @GetMapping("/admin")
     public String admin(Model model) {

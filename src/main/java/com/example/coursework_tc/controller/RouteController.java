@@ -1,8 +1,6 @@
 package com.example.coursework_tc.controller;
 
 import com.example.coursework_tc.model.Route;
-import com.example.coursework_tc.repository.UserRepository;
-import com.example.coursework_tc.service.Impl.UserService;
 import com.example.coursework_tc.service.RouteService;
 import com.example.coursework_tc.service.VehicleService;
 import lombok.RequiredArgsConstructor;

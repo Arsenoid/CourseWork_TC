@@ -84,7 +84,7 @@
         <input type="hidden" name="_csrf" value="${_csrf.token}">
         <input type="submit" value="Вход">
     </form>
-    <a href="/registration" class="register-link">Зарегистрироваться</a>
+    <a href="/role_selection" class="register-link">Зарегистрироваться</a>
 </div>
 </body>
 </html>

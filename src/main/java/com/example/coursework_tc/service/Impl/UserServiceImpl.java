@@ -3,6 +3,7 @@ package com.example.coursework_tc.service.Impl;
 import com.example.coursework_tc.model.User;
 import com.example.coursework_tc.model.enums.Role;
 import com.example.coursework_tc.repository.UserRepository;
+import com.example.coursework_tc.service.UserService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -17,25 +18,28 @@ import java.util.stream.Collectors;
 @Slf4j
 @Service
 @RequiredArgsConstructor
-public class UserService {
+public class UserServiceImpl implements UserService {
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
 
+    @Override
+    public List<User> listOfUsers() {
+        return userRepository.findAll();
+    }
+
+    @Override
     public boolean createUser(User user) {
         String email = user.getEmail();
         if (userRepository.findByEmail(email) != null) return false;
         user.setActive(true);
         user.setPassword(passwordEncoder.encode(user.getPassword()));
-        user.getRoles().add(Role.ROLE_USER);
+//        user.getRoles().add(Role.ROLE_USER);
         log.info("Created new user: {}", email);
         userRepository.save(user);
         return true;
     }
 
-    public List<User> listOfUsers() {
-        return userRepository.findAll();
-    }
-
+    @Override
     public void banUser(Long id) {
         User user = userRepository.findById(id).orElse(null);
         if (user != null) {
@@ -49,6 +53,8 @@ public class UserService {
         }
         userRepository.save(user);
     }
+
+    @Override
     public void changeUserRoles(User user, Map<String, String> form) {
         Set<String> roles = Arrays.stream(Role.values())
                 .map(Role::name)
