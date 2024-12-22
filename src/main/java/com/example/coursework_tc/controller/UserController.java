@@ -31,10 +31,10 @@ public class UserController {
 
     @PostMapping("/registration")
     public String createUser(User user, Model model, @RequestParam String role) {
-        if ("ROLE_USER".equals(role)) {
-            user.getRoles().add(Role.ROLE_USER);
-        } else if ("ROLE_CONTRACTOR".equals(role)) {
-            user.getRoles().add(Role.ROLE_CONTRACTOR);
+        if ("ROLE_CARRIER".equals(role)) {
+            user.getRoles().add(Role.ROLE_CARRIER);
+        } else if ("ROLE_CUSTOMER".equals(role)) {
+            user.getRoles().add(Role.ROLE_CUSTOMER);
         }
         if (!userService.createUser(user)) {
             model.addAttribute("errorMessage", "Пользователь с email: " + user.getEmail() + " уже существует!");

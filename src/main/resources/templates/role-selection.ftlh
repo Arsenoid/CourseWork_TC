@@ -54,8 +54,8 @@
 <div class="container">
     <h1>Выбор роли</h1>
     <div class="role-selection">
-        <a href="/registration?role=ROLE_USER">Перевозчик</a>
-        <a href="/registration?role=ROLE_CONTRACTOR">Заказчик</a>
+        <a href="/registration?role=ROLE_CARRIER">Исполнитель</a>
+        <a href="/registration?role=ROLE_CUSTOMER">Заказчик</a>
     </div>
 </div>
 </body>
