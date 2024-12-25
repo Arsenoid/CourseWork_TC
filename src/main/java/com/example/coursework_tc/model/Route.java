@@ -23,8 +23,9 @@ public class Route {
     //TODO: estimatedTime
     private String cargo_description;
     @Column(nullable = false)
-    private String cargo_weight;
+    private Double cargo_weight;
     private Double payment;
+    private String order_notes;
 
     @Enumerated(EnumType.STRING)
     private RouteStatus status = RouteStatus.ACTIVE;

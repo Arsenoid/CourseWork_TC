@@ -1,5 +1,9 @@
 package com.example.coursework_tc.model;
 
+import com.example.coursework_tc.model.enums.RouteStatus;
+import com.example.coursework_tc.model.enums.VehicleStatus;
+import jakarta.validation.constraints.NotEmpty;
+import jakarta.validation.constraints.NotNull;
 import lombok.Data;
 import jakarta.persistence.*;
 import java.time.LocalDateTime;
@@ -15,13 +19,21 @@ public class Vehicle {
     private Long id;
     @Column(unique = true)
     private String vin;
+
     private String model;
-    @Column(nullable = false)
-    private int manufacture_year;
-    private String license_plate;
-    private String fuel_type;
-    private Double load_capacity;
-    private String status;
+
+    private Double manufactureYear;
+
+    private String licensePlate;
+
+    private String fuelType;
+
+    private Double loadCapacity;
+
+    private Long orderId;
+
+    @Enumerated(EnumType.STRING)
+    private VehicleStatus status = VehicleStatus.FREE;
 
     @OneToMany(cascade = CascadeType.ALL, fetch = FetchType.LAZY, mappedBy = "vehicle")
     private List<Image> images = new ArrayList<>();

@@ -23,7 +23,7 @@
             border-radius: 8px;
         }
 
-        h1, h2, h3 {
+        h1 {
             text-align: center;
             color: #333;
         }
@@ -88,18 +88,23 @@
         }
 
         .logout-form {
-            text-align: center;
+            text-align: left;
             margin-bottom: 20px;
         }
 
-        .add-route-form {
-            text-align: center;
+        .route-item-info {
+            flex: 1;
         }
+
+        .route-item-price {
+            margin-left: auto;
+        }
+
     </style>
 </head>
 <body>
 <div class="container">
-    <h1>Маршруты</h1>
+    <h1>BLizzard Trans</h1>
     <#if user.email??>
         <h2>Имя пользователя: <i>${user.username}</i></h2>
         <form class="logout-form" action="/logout" method="post">
@@ -107,40 +112,57 @@
             <input type="submit" value="Выйти"/>
         </form>
         <#if user.isAdmin()>
-            <a href="/admin">Панель администратора</a>
+            <form action="/admin" method="get">
+                <input type="hidden" name="_csrf" value="${_csrf.token}">
+                <input type="submit" value="Панель администратора"/>
+            </form>
+            <hr>
+            <form action="/add_route" method="get">
+                <input type="hidden" name="_csrf" value="${_csrf.token}">
+                <input type="submit" value="Добавить новый маршрут"/>
+            </form>
+            <form action="/customer" method="get">
+                <input type="hidden" name="_csrf" value="${_csrf.token}">
+                <input type="submit" value="Личный кабинет заказчика"/>
+            </form>
+        <#elseif user.isCustomer()>
+            <hr>
+            <form action="/customer" method="get">
+                <input type="hidden" name="_csrf" value="${_csrf.token}">
+                <input type="submit" value="Личный кабинет заказчика"/>
+            </form>
+        <#elseif user.isCarrier()>
+            <hr>
+            <form action="/carrier" method="get">
+                <input type="hidden" name="_csrf" value="${_csrf.token}">
+                <input type="submit" value="Личный кабинет исполнителя"/>
+            </form>
         </#if>
     <#else>
         <a href="/login">Войти</a>
     </#if>
     <hr>
-<#--    <form action="/vehicles" method="get">-->
-<#--        Поиск по модели авто: <input type="text" name="car_model"><br>-->
-<#--        <input type="submit" value="Поиск">-->
-<#--    </form>-->
+    <#--    <form action="/vehicles" method="get">-->
+    <#--        Поиск по модели авто: <input type="text" name="car_model"><br>-->
+    <#--        <input type="submit" value="Поиск">-->
+    <#--    </form>-->
+    <h3>Доступные для выполнения маршруты</h3>
     <div class="route-list">
         <#list routes as route>
-            <div class="route-item">
-                <p><b>${route.startLocation} - ${route.endLocation}</b></p>
-                <p><b>Создан:</b> ${route.formattedCreatedAt} | <a href="/${route.id}">Подробнее...</a></p>
-            </div>
+            <#if route.status == "ACTIVE">
+                <div class="route-item">
+                    <div class="route-item-info">
+                        <p><b>${route.startLocation} - ${route.endLocation}</b></p>
+                        <p><b>Создан:</b> ${route.formattedCreatedAt}</p>
+                    </div>
+                    <p><b>Оплата:</b> ${route.payment} руб.</p>
+                    <p><a href="/${route.id}">Подробнее...</a></p>
+                </div>
+            </#if>
         <#else>
             <h3>Нет пердложений</h3>
         </#list>
     </div>
-    <hr>
-    <#if user.email??>
-        <h3>Добавить новый маршрут</h3>
-        <form class="add-route-form" action="/add_route" method="post" enctype="multipart/form-data">
-            Начальная точка: <input type="text" name="startLocation"><br><br>
-            Конечная точка: <input type="text" name="endLocation"><br><br>
-            Расстояние: <input type="number" name="distance"><br><br>
-            Описание груза: <input type="text" name="cargo_description"><br><br>
-            Масса груза: <input type="number" name="cargo_weight"><br><br>
-            Оплата: <input type="number" name="payment"><br><br>
-            <input type="hidden" name="_csrf" value="${_csrf.token}">
-            <input type="submit" value="Добавить маршрут">
-        </form>
-    </#if>
 </div>
 </body>
 </html>

@@ -38,7 +38,7 @@ public class User implements UserDetails {
     @OneToMany(cascade = CascadeType.ALL, fetch = FetchType.EAGER, mappedBy = "user")
     private List<Vehicle> vehicles = new ArrayList<>();
 
-    @OneToMany(cascade = CascadeType.ALL, fetch = FetchType.EAGER, mappedBy = "client")
+    @OneToMany(cascade = CascadeType.ALL, fetch = FetchType.EAGER, mappedBy = "carrier")
     private List<Order> orders = new ArrayList<>();
 
     @OneToMany(cascade = CascadeType.ALL, fetch = FetchType.LAZY, mappedBy = "customer")
@@ -55,6 +55,14 @@ public class User implements UserDetails {
 
     public boolean isAdmin() {
         return roles.contains(Role.ROLE_ADMIN);
+    }
+
+    public boolean isCustomer() {
+        return roles.contains(Role.ROLE_CUSTOMER);
+    }
+
+    public boolean isCarrier() {
+        return roles.contains(Role.ROLE_CARRIER);
     }
 
     @Override

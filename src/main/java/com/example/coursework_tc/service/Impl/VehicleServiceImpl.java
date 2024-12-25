@@ -3,8 +3,10 @@ package com.example.coursework_tc.service.Impl;
 import com.example.coursework_tc.model.Image;
 import com.example.coursework_tc.model.User;
 import com.example.coursework_tc.model.Vehicle;
+import com.example.coursework_tc.model.enums.VehicleStatus;
 import com.example.coursework_tc.repository.UserRepository;
 import com.example.coursework_tc.repository.VehicleRepository;
+import com.example.coursework_tc.service.UserService;
 import com.example.coursework_tc.service.VehicleService;
 import jakarta.transaction.Transactional;
 import lombok.AllArgsConstructor;
@@ -16,6 +18,7 @@ import org.springframework.web.multipart.MultipartFile;
 import java.io.IOException;
 import java.security.Principal;
 import java.util.List;
+import java.util.Optional;
 
 @Service
 @Slf4j
@@ -23,7 +26,7 @@ import java.util.List;
 public class VehicleServiceImpl implements VehicleService {
 
     private final VehicleRepository vehicleRepository;
-    private final UserRepository userRepository;
+    private final UserService userService;
 
     @Override
     public List<Vehicle> findAllVehicles(String car_model) {
@@ -32,13 +35,33 @@ public class VehicleServiceImpl implements VehicleService {
     }
 
     @Override
+    public List<Vehicle> findVehiclesByUser(User user) {
+        return vehicleRepository.findVehiclesByUserId(user.getId());
+    }
+
+    @Override
+    public List<Vehicle> findFreeVehiclesByUser(User user) {
+        return vehicleRepository.findByStatusAndUserId(VehicleStatus.FREE, user.getId());
+    }
+
+    @Override
+    public Vehicle findVehicleById(Long id) {
+        return vehicleRepository.findById(id).orElse(null);
+    }
+
+    @Override
     public Vehicle findVehicleByVin(String vin) {
         return vehicleRepository.findByVin(vin);
     }
 
     @Override
+    public Vehicle findVehicleByOrderId(Long orderId) {
+        return vehicleRepository.findVehicleByOrderId(orderId);
+    }
+
+    @Override
     public void addVehicle(Principal principal, Vehicle vehicle, MultipartFile file1, MultipartFile file2, MultipartFile file3) throws IOException {
-        vehicle.setUser(getUserByPrincipal(principal));
+        vehicle.setUser(userService.getUserByPrincipal(principal));
         Image image1;
         Image image2;
         Image image3;
@@ -57,14 +80,23 @@ public class VehicleServiceImpl implements VehicleService {
         }
         log.info("Saving new vehicle: {} - {}. Owner: {}", vehicle.getModel(), vehicle.getVin(), vehicle.getUser().getEmail());
         Vehicle vehicleFromDb = vehicleRepository.save(vehicle);
-        vehicleFromDb.setPreviewImageId(vehicleFromDb.getImages().getFirst().getId());
-        vehicleRepository.save(vehicle);
+        Optional<Image> firstImageOpt = vehicleFromDb.getImages().stream().findFirst();
+        if (firstImageOpt.isPresent()) {
+            vehicleFromDb.setPreviewImageId(firstImageOpt.get().getId());
+            vehicleRepository.save(vehicleFromDb);
+        }
     }
 
     @Override
-    public User getUserByPrincipal(Principal principal) {
-        if (principal == null) return new User();
-        return userRepository.findByUsername(principal.getName());
+    public void updateVehicleByVin(String vin, Vehicle newvehicle) {
+        Vehicle vehicle = findVehicleByVin(vin);
+        vehicle.setVin(newvehicle.getVin());
+        vehicle.setModel(newvehicle.getModel());
+        vehicle.setManufactureYear(newvehicle.getManufactureYear());
+        vehicle.setLicensePlate(newvehicle.getLicensePlate());
+        vehicle.setFuelType(newvehicle.getFuelType());
+        vehicle.setLoadCapacity(newvehicle.getLoadCapacity());
+        vehicleRepository.save(vehicle);
     }
 
     private Image toImageEntity(MultipartFile file) throws IOException {
@@ -77,10 +109,10 @@ public class VehicleServiceImpl implements VehicleService {
         return image;
     }
 
-//    @Override
-//    public Vehicle updateVehicle(Vehicle vehicle) {
-//        return repository.save(vehicle);
-//    }
+    @Override
+    public Vehicle updateVehicle(Vehicle vehicle) {
+        return vehicleRepository.save(vehicle);
+    }
 
     @Override
     @Transactional

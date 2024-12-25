@@ -10,9 +10,13 @@ public interface RouteService {
 
     List<Route> getAllRoutes();
 
+    List<Route> getAllRoutesByCustomer(User user);
+
     void addRoute(Principal principal, Route route);
 
     Route getRouteById(Long id);
 
     void deleteRoute(Long id);
+
+    void editRoute(Long id, Route updatedRoute);
 }

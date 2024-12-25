@@ -1,8 +1,10 @@
 package com.example.coursework_tc.controller;
 
 import com.example.coursework_tc.model.Route;
+import com.example.coursework_tc.model.enums.RouteStatus;
 import com.example.coursework_tc.service.RouteService;
-import com.example.coursework_tc.service.VehicleService;
+import com.example.coursework_tc.service.UserService;
+import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -18,31 +20,28 @@ import java.security.Principal;
 @RequiredArgsConstructor
 public class RouteController {
     private final RouteService routeService;
-    private final VehicleService vehicleService;
+    private final UserService userService;
 
     @GetMapping()
     public String getRoutes(Model model, Principal principal) {
         model.addAttribute("routes", routeService.getAllRoutes());
-        model.addAttribute("user", vehicleService.getUserByPrincipal(principal));
+        model.addAttribute("user", userService.getUserByPrincipal(principal));
         return "routes";
-    }
-
-    @PostMapping("/add_route")
-    public String addRoute(Principal principal, Route route) {
-        routeService.addRoute(principal, route);
-        return "redirect:/";
     }
 
     @GetMapping("/{id}")
     public String getRouteDetails(Model model, @PathVariable Long id, Principal principal) {
-        model.addAttribute("route", routeService.getRouteById(id));
-        model.addAttribute("user", vehicleService.getUserByPrincipal(principal));
-        return "route-details";
-    }
+        Route route = routeService.getRouteById(id);
+        String status;
+        if (route.getStatus() == RouteStatus.ACTIVE) {
+            status = "Заказ создан и ожидает обработки.";
+        } else if (route.getStatus() == RouteStatus.IN_PROCESS) {
+            status = "Заказ находится в процессе доставки.";
+        } else { status = "Заказ успешно доставлен."; }
 
-    @PostMapping("/delete_route/{id}")
-    public String deleteRoute(@PathVariable Long id) {
-        routeService.deleteRoute(id);
-        return "redirect:/";
+        model.addAttribute("route", route);
+        model.addAttribute("status", status);
+        model.addAttribute("user", userService.getUserByPrincipal(principal));
+        return "route-details";
     }
 }

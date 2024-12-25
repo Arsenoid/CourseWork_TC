@@ -69,14 +69,18 @@
 </head>
 <body>
 <div class="container">
-    <h1>Vehicles Management</h1>
+    <h1>BLizzard Trans</h1>
     <hr>
     <h4>Регистрация</h4>
     <form action="/registration" method="post">
         Имя пользователя: <input type="text" name="username"><br><br>
+        Дата рождения: <input type="date" name="dateOfBirth"><br><br>
+        Номер телефона: <input type="tel" name="tel_number"><br><br>
         Эл. почта: <input type="email" name="email"><br><br>
+        <#if role == "ROLE_CARRIER">
+            Стаж вождения (в годах): <input type="number" name="experience"><br><br>
+        </#if>
         Пароль: <input type="password" name="password"><br><br>
-        <#--    Номер телефона: <input type="text" name="phoneNumber"><br><br>-->
         <input type="hidden" name="role" value="${role}">
         <input type="hidden" name="_csrf" value="${_csrf.token}">
         <input type="submit" value="Зарегистрироваться">

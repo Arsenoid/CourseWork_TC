@@ -12,12 +12,21 @@ public interface VehicleService {
 
     List<Vehicle> findAllVehicles(String car_model);
 
+    List<Vehicle> findVehiclesByUser(User user);
+
+    List<Vehicle> findFreeVehiclesByUser(User user);
+
+    Vehicle findVehicleById(Long id);
+
     Vehicle findVehicleByVin(String vin);
+
+    Vehicle findVehicleByOrderId(Long orderId);
 
     void addVehicle(Principal principal, Vehicle vehicle, MultipartFile file1, MultipartFile file2, MultipartFile file3) throws IOException;
 
-    User getUserByPrincipal(Principal principal);
-//    Vehicle updateVehicle(Vehicle vehicle);
+    void updateVehicleByVin(String vin, Vehicle newvehicle);
+
+    Vehicle updateVehicle(Vehicle vehicle);
 
     void deleteById(Long id);
 }

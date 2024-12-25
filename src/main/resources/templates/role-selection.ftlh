@@ -52,7 +52,9 @@
 </head>
 <body>
 <div class="container">
-    <h1>Выбор роли</h1>
+    <h1>BLizzard Trans</h1>
+    <hr>
+    <h1>Кем Вы являетесь?</h1>
     <div class="role-selection">
         <a href="/registration?role=ROLE_CARRIER">Исполнитель</a>
         <a href="/registration?role=ROLE_CUSTOMER">Заказчик</a>

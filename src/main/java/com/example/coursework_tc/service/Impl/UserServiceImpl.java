@@ -9,6 +9,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import java.security.Principal;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
@@ -66,5 +67,16 @@ public class UserServiceImpl implements UserService {
             }
         }
         userRepository.save(user);
+    }
+
+    @Override
+    public User getUserByPrincipal(Principal principal) {
+        if (principal == null) return new User();
+        return userRepository.findByUsername(principal.getName());
+    }
+
+    @Override
+    public User getUserById(Long id) {
+        return userRepository.findById(id).orElse(null);
     }
 }

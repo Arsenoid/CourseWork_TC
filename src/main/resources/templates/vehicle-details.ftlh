@@ -87,6 +87,17 @@
             background-color: #c82333; /* Темнее при наведении */
         }
 
+        .edit-button {
+            background-color: #ffc107; /* Желтый цвет для кнопки редактирования */
+            border-radius: 4px; /* Скругленные углы */
+            padding: 10px 20px;
+            margin-top: 10px;
+            margin-right: 10px; /* Отступ справа для кнопки редактирования */
+        }
+
+        .edit-button:hover {
+            background-color: #e0a800; /* Темнее при наведении */
+        }
     </style>
 </head>
 <body>
@@ -98,22 +109,32 @@
         </#list>
     </div>
     <div class="vehicle-details">
-        <p><strong>VIN:</strong> ${vehicle.vin}</p>
-        <p><strong>Model:</strong> ${vehicle.model}</p>
-        <p><strong>Manufacture Year:</strong> ${vehicle.manufacture_year}</p>
-        <p><strong>Registration:</strong> ${vehicle.registration}</p>
-        <p><strong>Fuel Type:</strong> ${vehicle.fuel_type}</p>
-        <p><strong>Capacity:</strong> ${vehicle.capacity}</p>
-        <p><strong>Status:</strong> ${vehicle.status}</p>
-        <p><strong>Owner:</strong> <a href="/user/${vehicle.user.id}">${vehicle.user.username}</a></p>
+        <p><strong>VIN номер:</strong> ${vehicle.vin}</p>
+        <p><strong>Марка и модель:</strong> ${vehicle.model}</p>
+        <p><strong>Год выпуска:</strong> ${vehicle.manufactureYear}</p>
+        <p><strong>Номерной знак:</strong> ${vehicle.licensePlate}</p>
+        <p><strong>Тип топлива:</strong> ${vehicle.fuelType}</p>
+        <p><strong>Грузоподъемность:</strong> ${vehicle.loadCapacity} кг.</p>
+        <#if vehicle.status == "FREE">
+            <p><b>Статус:</b> Свободен</p>
+        <#elseif vehicle.status = "BUSY">
+            <p><b>Статус:</b> На рейсе</p>
+        <#else>
+            <p><b>Статус:</b> Неисправен</p>
+        </#if>
+        <p><strong>Владелец:</strong> <a href="/user/${vehicle.user.id}">${vehicle.user.username}</a></p>
         <#if user.id == vehicle.user.id>
+            <form action="/vehicles/edit_vehicle/${vehicle.vin}" method="get" style="display: inline;">
+                <input type="hidden" name="_csrf" value="${_csrf.token}">
+                <input type="submit" class="edit-button" value="Редактировать">
+            </form>
             <form action="/vehicles/delete_vehicle/${vehicle.id}" method="post">
                 <input type="hidden" name="_csrf" value="${_csrf.token}">
                 <input type="submit" class="delete-button" value="Удалить авто"/>
             </form>
         </#if>
     </div>
-    <button onclick="window.location.href='/vehicles'">Back to List</button>
+    <button onclick="window.location.href='/carrier'">Вернуться к списку</button>
 </div>
 </body>
 </html>
