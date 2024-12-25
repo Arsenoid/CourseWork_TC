@@ -58,7 +58,7 @@
 <body>
 <div class="container">
     <h1>Редактировать автомобиль</h1>
-    <form class="edit-vehicle-form" action="/vehicles/edit_vehicle/${vehicle.id}" method="post" enctype="multipart/form-data">
+    <form class="edit-vehicle-form" action="/vehicles/edit_vehicle/${vehicle.vin}" method="post" enctype="multipart/form-data">
         <label for="vin">VIN номер:</label>
         <input type="text" id="vin" name="vin" value="${vehicle.vin}" required><br><br>
 

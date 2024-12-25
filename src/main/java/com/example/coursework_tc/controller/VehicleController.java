@@ -6,6 +6,7 @@ import com.example.coursework_tc.service.UserService;
 import com.example.coursework_tc.service.VehicleService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
@@ -17,6 +18,7 @@ import java.util.List;
 
 @Controller
 @RequiredArgsConstructor
+@PreAuthorize("hasAuthority('ROLE_ADMIN') or hasAuthority('ROLE_CARRIER')")
 @RequestMapping("/vehicles")
 public class VehicleController {
     private final VehicleService vehicleService;
@@ -71,6 +73,6 @@ public class VehicleController {
     @PostMapping("/delete_vehicle/{id}")
     public String deleteById(@PathVariable Long id) {
         vehicleService.deleteById(id);
-        return "redirect:/vehicles";
+        return "redirect:/carrier";
     }
 }

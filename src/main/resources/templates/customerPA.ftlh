@@ -208,8 +208,8 @@
 <div class="container">
     <h1>Личный кабинет заказчика</h1>
     <h2>Имя пользователя: <i>${user.username}</i></h2>
+    <a href="/" class="add-route-link">Вернуться на главную</a>
     <hr>
-
     <h3>Размещенные заказы</h3>
     <div class="route-list">
         <div class="route-item">

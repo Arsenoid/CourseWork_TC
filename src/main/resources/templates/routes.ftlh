@@ -117,10 +117,6 @@
                 <input type="submit" value="Панель администратора"/>
             </form>
             <hr>
-            <form action="/add_route" method="get">
-                <input type="hidden" name="_csrf" value="${_csrf.token}">
-                <input type="submit" value="Добавить новый маршрут"/>
-            </form>
             <form action="/customer" method="get">
                 <input type="hidden" name="_csrf" value="${_csrf.token}">
                 <input type="submit" value="Личный кабинет заказчика"/>
@@ -139,8 +135,11 @@
             </form>
         </#if>
     <#else>
-        <a href="/login">Войти</a>
-    </#if>
+        <h3>Вы не авторизованы</h3>
+        <form class="logout-form" action="/login" method="post">
+            <input type="hidden" name="_csrf" value="${_csrf.token}">
+            <input type="submit" value="Войти"/>
+        </form>    </#if>
     <hr>
     <#--    <form action="/vehicles" method="get">-->
     <#--        Поиск по модели авто: <input type="text" name="car_model"><br>-->

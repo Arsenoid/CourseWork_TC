@@ -144,6 +144,7 @@
 <div class="container">
     <h1>Личный кабинет исполнителя</h1>
     <h2>Имя пользователя: <i>${user.username}</i></h2>
+    <a href="/" class="add-vehicle-link">Вернуться на главную</a>
     <hr>
     <h3>Маршруты на выполнении</h3>
     <div class="route-list">

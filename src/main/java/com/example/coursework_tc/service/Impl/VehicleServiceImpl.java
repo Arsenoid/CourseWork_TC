@@ -51,7 +51,7 @@ public class VehicleServiceImpl implements VehicleService {
 
     @Override
     public Vehicle findVehicleByVin(String vin) {
-        return vehicleRepository.findByVin(vin);
+        return vehicleRepository.findVehicleByVin(vin);
     }
 
     @Override
@@ -89,7 +89,7 @@ public class VehicleServiceImpl implements VehicleService {
 
     @Override
     public void updateVehicleByVin(String vin, Vehicle newvehicle) {
-        Vehicle vehicle = findVehicleByVin(vin);
+        Vehicle vehicle = vehicleRepository.findVehicleByVin(vin);
         vehicle.setVin(newvehicle.getVin());
         vehicle.setModel(newvehicle.getModel());
         vehicle.setManufactureYear(newvehicle.getManufactureYear());
