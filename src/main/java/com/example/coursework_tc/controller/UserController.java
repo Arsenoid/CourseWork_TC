@@ -14,7 +14,15 @@ public class UserController {
     private final UserServiceImpl userService;
 
     @GetMapping("/login")
-    public String login() {
+    public String login(@RequestParam(value = "error", required = false) String error,
+                        @RequestParam(value = "logout", required = false) String logout,
+                        Model model) {
+        if (error != null) {
+            model.addAttribute("error", "Неверный email или пароль");
+        }
+        if (logout != null) {
+            model.addAttribute("logout", "Вы успешно вышли из системы");
+        }
         return "login";
     }
 
