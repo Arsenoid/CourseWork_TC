@@ -17,14 +17,6 @@ spring:
         format_sql: true
   freemarker:
     expose-request-attributes: true
-    cache: false
-    settings:
-      template_update_delay: 0
-  devtools:
-    restart:
-      enabled: true
-    livereload:
-      enabled: true
   servlet:
     multipart:
       max-file-size: 100MB
