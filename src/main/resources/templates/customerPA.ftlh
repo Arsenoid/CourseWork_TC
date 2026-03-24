@@ -583,10 +583,12 @@
             <!-- ЗАКАЗЫ НА ИСПОЛНЕНИИ (IN_PROCESS) -->
             <div class="section">
                 <div class="section-header">
-                    <span class="section-icon">🚚</span>
-                    <h2 class="section-title">Заказы на исполнении</h2>
-                    <#assign processCount = routes?filter(r -> r.status == "IN_PROCESS")?size>
-                    <span class="section-count">${processCount}</span>
+                    <div class="section-title-wrapper">
+                        <span class="section-icon">🚚</span>
+                        <h2 class="section-title">Заказы на исполнении</h2>
+                        <#assign processCount = routes?filter(r -> r.status == "IN_PROCESS")?size>
+                        <span class="section-count">${processCount}</span>
+                    </div>
                 </div>
 
                 <div class="orders-grid">
@@ -650,10 +652,12 @@
             <!-- ВЫПОЛНЕННЫЕ ЗАКАЗЫ (COMPLETED) -->
             <div class="section">
                 <div class="section-header">
-                    <span class="section-icon">✅</span>
-                    <h2 class="section-title">Выполненные заказы</h2>
-                    <#assign completedCount = routes?filter(r -> r.status == "COMPLETED")?size>
-                    <span class="section-count">${completedCount}</span>
+                    <div class="section-title-wrapper">
+                        <span class="section-icon">✅</span>
+                        <h2 class="section-title">Выполненные заказы</h2>
+                        <#assign completedCount = routes?filter(r -> r.status == "COMPLETED")?size>
+                        <span class="section-count">${completedCount}</span>
+                    </div>
                 </div>
 
                 <div class="orders-grid">

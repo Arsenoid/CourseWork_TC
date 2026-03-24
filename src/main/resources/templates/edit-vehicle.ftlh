@@ -1,94 +1,484 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="ru">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Редактировать автомобиль</title>
+    <title>Blizzard Trans — Редактирование транспорта</title>
     <link rel="stylesheet" href="/css/base.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <style>
-        body {
-            font-family: Arial, sans-serif;
+        * {
             margin: 0;
             padding: 0;
-            background-color: #f4f4f4;
-            color: #333;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+            color: #0f172a;
+            line-height: 1.5;
+            min-height: 100vh;
+            padding: 24px;
         }
 
         .container {
-            max-width: 1200px;
-            margin: 20px auto;
-            background: #fff;
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        /* Карточка формы */
+        .form-card {
+            background: white;
+            border-radius: 32px;
+            box-shadow: 0 20px 35px -12px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+            animation: fadeInUp 0.4s ease-out;
+        }
+
+        /* Шапка */
+        .form-header {
+            background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
+            padding: 32px 32px 28px;
+            color: white;
+        }
+
+        .form-header h1 {
+            font-size: 28px;
+            font-weight: 700;
+            margin-bottom: 12px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .form-header p {
+            color: #94a3b8;
+            font-size: 14px;
+        }
+
+        .vehicle-info {
+            margin-top: 16px;
+            padding-top: 16px;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+            font-size: 14px;
+        }
+
+        .vehicle-info span {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 4px 12px;
+            border-radius: 40px;
+            font-family: monospace;
+        }
+
+        /* Основная форма */
+        .form-content {
+            padding: 32px;
+        }
+
+        .form-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 24px;
+        }
+
+        .form-field-full {
+            grid-column: span 2;
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .form-label {
+            font-size: 14px;
+            font-weight: 500;
+            color: #334155;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .form-label i {
+            font-style: normal;
+            font-size: 18px;
+        }
+
+        .required-star {
+            color: #ef4444;
+            font-size: 12px;
+        }
+
+        .form-input {
+            padding: 12px 16px;
+            border: 2px solid #e2e8f0;
+            border-radius: 14px;
+            font-size: 15px;
+            font-family: inherit;
+            transition: all 0.2s;
+            background: #fafcff;
+        }
+
+        .form-input:focus {
+            outline: none;
+            border-color: #3b82f6;
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+            background: white;
+        }
+
+        .form-input:hover:not(:focus) {
+            border-color: #cbd5e1;
+        }
+
+        /* Секция загрузки фото */
+        .upload-section {
+            margin-bottom: 24px;
+        }
+
+        .upload-title {
+            font-size: 16px;
+            font-weight: 600;
+            color: #0f172a;
+            margin-bottom: 16px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .upload-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 20px;
+        }
+
+        .upload-item {
+            background: #f8fafc;
+            border: 2px dashed #cbd5e1;
+            border-radius: 20px;
             padding: 20px;
-            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-            border-radius: 8px;
-        }
-
-        h1, h2, h3 {
             text-align: center;
-            color: #333;
-        }
-
-        form {
-            margin-bottom: 20px;
-        }
-
-        form input[type="text"], form input[type="number"], form input[type="file"] {
-            width: calc(100% - 22px);
-            padding: 10px;
-            margin-bottom: 10px;
-            border: 1px solid #ccc;
-            border-radius: 4px;
-        }
-
-        form input[type="submit"] {
-            background-color: #007bff;
-            color: #fff;
-            border: none;
-            padding: 10px 20px;
-            border-radius: 4px;
+            transition: all 0.2s;
             cursor: pointer;
-            transition: background-color 0.3s;
         }
 
-        form input[type="submit"]:hover {
-            background-color: #0056b3;
+        .upload-item:hover {
+            border-color: #3b82f6;
+            background: #f1f5f9;
+        }
+
+        .upload-icon {
+            font-size: 32px;
+            margin-bottom: 12px;
+            color: #64748b;
+        }
+
+        .upload-label {
+            font-size: 13px;
+            color: #475569;
+            margin-bottom: 8px;
+        }
+
+        .upload-input {
+            display: none;
+        }
+
+        .upload-filename {
+            font-size: 11px;
+            color: #94a3b8;
+            margin-top: 8px;
+            word-break: break-all;
+        }
+
+        .upload-hint {
+            font-size: 11px;
+            color: #cbd5e1;
+            margin-top: 8px;
+        }
+
+        /* Подсказки */
+        .input-hint {
+            font-size: 12px;
+            color: #94a3b8;
+            margin-top: 4px;
+        }
+
+        /* Разделитель */
+        .divider {
+            margin: 24px 0;
+            border: none;
+            border-top: 1px solid #eef2f6;
+        }
+
+        /* Кнопки */
+        .form-actions {
+            display: flex;
+            gap: 16px;
+            margin-top: 32px;
+            padding-top: 24px;
+            border-top: 2px solid #eef2f6;
+        }
+
+        .btn {
+            padding: 14px 28px;
+            border-radius: 60px;
+            font-weight: 600;
+            font-size: 15px;
+            cursor: pointer;
+            transition: all 0.2s;
+            border: none;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            justify-content: center;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+            color: white;
+            flex: 1;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(59, 130, 246, 0.3);
+        }
+
+        .btn-secondary {
+            background: #f1f5f9;
+            color: #475569;
+        }
+
+        .btn-secondary:hover {
+            background: #e2e8f0;
+            transform: translateY(-2px);
+        }
+
+        /* Адаптивность */
+        @media (max-width: 768px) {
+            body {
+                padding: 16px;
+            }
+
+            .form-header {
+                padding: 24px 20px;
+            }
+
+            .form-content {
+                padding: 24px 20px;
+            }
+
+            .form-grid {
+                grid-template-columns: 1fr;
+                gap: 20px;
+            }
+
+            .form-field-full {
+                grid-column: span 1;
+            }
+
+            .upload-grid {
+                grid-template-columns: 1fr;
+                gap: 12px;
+            }
+
+            .form-actions {
+                flex-direction: column;
+            }
+        }
+
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
         }
     </style>
 </head>
 <body>
 <div class="container">
-    <h1>Редактировать автомобиль</h1>
-    <form class="edit-vehicle-form" action="/vehicles/edit_vehicle/${vehicle.vin}" method="post" enctype="multipart/form-data">
-        <label for="vin">VIN номер:</label>
-        <input type="text" id="vin" name="vin" value="${vehicle.vin}" required><br><br>
+    <div class="form-card">
+        <!-- ШАПКА -->
+        <div class="form-header">
+            <h1>
+                ✏️ Редактирование транспорта
+            </h1>
+            <p>Измените информацию о транспортном средстве</p>
+            <div class="vehicle-info">
+                <span>VIN: ${vehicle.vin!''}</span>
+            </div>
+        </div>
 
-        <label for="model">Марка и модель:</label>
-        <input type="text" id="model" name="model" value="${vehicle.model}" required><br><br>
+        <!-- ФОРМА -->
+        <div class="form-content">
+            <form action="/vehicles/edit_vehicle/${vehicle.vin}" method="post" enctype="multipart/form-data">
+                <input type="hidden" name="_csrf" value="${_csrf.token}">
 
-        <label for="manufactureYear">Год выпуска:</label>
-        <input type="number" id="manufactureYear" name="manufactureYear" value="${vehicle.manufactureYear}" required><br><br>
+                <!-- СЕКЦИЯ ЗАГРУЗКИ ФОТО -->
+                <div class="upload-section">
+                    <div class="upload-title">
+                        <span>📸</span> Обновить фотографии
+                    </div>
+                    <div class="upload-grid">
+                        <div class="upload-item" onclick="document.getElementById('file1').click()">
+                            <div class="upload-icon">📷</div>
+                            <div class="upload-label">Фото 1</div>
+                            <input type="file" id="file1" name="file1" class="upload-input" accept="image/*">
+                            <div class="upload-filename" id="file1-name">Оставить без изменений</div>
+                        </div>
+                        <div class="upload-item" onclick="document.getElementById('file2').click()">
+                            <div class="upload-icon">📷</div>
+                            <div class="upload-label">Фото 2</div>
+                            <input type="file" id="file2" name="file2" class="upload-input" accept="image/*">
+                            <div class="upload-filename" id="file2-name">Оставить без изменений</div>
+                        </div>
+                        <div class="upload-item" onclick="document.getElementById('file3').click()">
+                            <div class="upload-icon">📷</div>
+                            <div class="upload-label">Фото 3</div>
+                            <input type="file" id="file3" name="file3" class="upload-input" accept="image/*">
+                            <div class="upload-filename" id="file3-name">Оставить без изменений</div>
+                        </div>
+                    </div>
+                    <div class="input-hint">Загрузите новые фото, чтобы заменить существующие. Поддерживаются: JPG, PNG, GIF</div>
+                </div>
 
-        <label for="licensePlate">Номерной знак:</label>
-        <input type="text" id="licensePlate" name="licensePlate" value="${vehicle.licensePlate}" required><br><br>
+                <div class="divider"></div>
 
-        <label for="fuelType">Тип топлива:</label>
-        <input type="text" id="fuelType" name="fuelType" value="${vehicle.fuelType}" required><br><br>
+                <!-- ОСНОВНЫЕ ПОЛЯ -->
+                <div class="form-grid">
+                    <!-- VIN номер (не редактируемый) -->
+                    <div class="form-group form-field-full">
+                        <label class="form-label" for="vin">
+                            <i>🔑</i> VIN номер <span class="required-star">*</span>
+                        </label>
+                        <input type="text"
+                               id="vin"
+                               name="vin"
+                               class="form-input"
+                               value="${vehicle.vin!''}"
+                               required
+                               readonly
+                               style="background: #f1f5f9; cursor: not-allowed;">
+                        <div class="input-hint">VIN номер нельзя изменить после создания</div>
+                    </div>
 
-        <label for="loadCapacity">Грузоподъемность:</label>
-        <input type="number" id="loadCapacity" name="loadCapacity" value="${vehicle.loadCapacity}" required><br><br>
+                    <!-- Марка и модель -->
+                    <div class="form-group form-field-full">
+                        <label class="form-label" for="model">
+                            <i>🚗</i> Марка и модель <span class="required-star">*</span>
+                        </label>
+                        <input type="text"
+                               id="model"
+                               name="model"
+                               class="form-input"
+                               value="${vehicle.model!''}"
+                               placeholder="Например: Mercedes-Benz Sprinter"
+                               required>
+                    </div>
 
-        <label for="file1">Фото 1:</label>
-        <input type="file" id="file1" name="file1"><br><br>
+                    <!-- Год выпуска -->
+                    <div class="form-group">
+                        <label class="form-label" for="manufactureYear">
+                            <i>📅</i> Год выпуска
+                        </label>
+                        <input type="number"
+                               id="manufactureYear"
+                               name="manufactureYear"
+                               class="form-input"
+                               value="${vehicle.manufactureYear!''}"
+                               placeholder="2020"
+                               min="1950"
+                               max="2025">
+                    </div>
 
-        <label for="file2">Фото 2:</label>
-        <input type="file" id="file2" name="file2"><br><br>
+                    <!-- Номерной знак -->
+                    <div class="form-group">
+                        <label class="form-label" for="licensePlate">
+                            <i>🔢</i> Номерной знак <span class="required-star">*</span>
+                        </label>
+                        <input type="text"
+                               id="licensePlate"
+                               name="licensePlate"
+                               class="form-input"
+                               value="${vehicle.licensePlate!''}"
+                               placeholder="А123ВС 777"
+                               required>
+                    </div>
 
-        <label for="file3">Фото 3:</label>
-        <input type="file" id="file3" name="file3"><br><br>
+                    <!-- Тип топлива -->
+                    <div class="form-group">
+                        <label class="form-label" for="fuelType">
+                            <i>⛽</i> Тип топлива
+                        </label>
+                        <input type="text"
+                               id="fuelType"
+                               name="fuelType"
+                               class="form-input"
+                               value="${vehicle.fuelType!''}"
+                               placeholder="Бензин, Дизель, Газ, Электро">
+                    </div>
 
-        <input type="hidden" name="_csrf" value="${_csrf.token}">
-        <input type="submit" value="Сохранить">
-    </form>
+                    <!-- Грузоподъемность -->
+                    <div class="form-group">
+                        <label class="form-label" for="loadCapacity">
+                            <i>⚖️</i> Грузоподъемность <span class="required-star">*</span>
+                        </label>
+                        <input type="number"
+                               id="loadCapacity"
+                               name="loadCapacity"
+                               class="form-input"
+                               value="${vehicle.loadCapacity!0}"
+                               placeholder="кг"
+                               required>
+                    </div>
+                </div>
+
+                <div class="divider"></div>
+
+                <!-- КНОПКИ -->
+                <div class="form-actions">
+                    <a href="/vehicles/${vehicle.vin}" class="btn btn-secondary">
+                        ← Отмена
+                    </a>
+                    <button type="submit" class="btn btn-primary">
+                        💾 Сохранить изменения
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
 </div>
+
+<script>
+    // Отображение имени выбранного файла
+    function setupFileInput(inputId, displayId) {
+        const input = document.getElementById(inputId);
+        const display = document.getElementById(displayId);
+        if (input) {
+            input.addEventListener('change', function() {
+                if (this.files && this.files[0]) {
+                    display.textContent = '✓ ' + this.files[0].name;
+                    display.style.color = '#15803d';
+                } else {
+                    display.textContent = 'Оставить без изменений';
+                    display.style.color = '#94a3b8';
+                }
+            });
+        }
+    }
+
+    setupFileInput('file1', 'file1-name');
+    setupFileInput('file2', 'file2-name');
+    setupFileInput('file3', 'file3-name');
+
+    // Автофокус на поле модели
+    document.getElementById('model').focus();
+</script>
 </body>
 </html>
