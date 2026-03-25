@@ -67,6 +67,10 @@
             margin-bottom: 24px;
         }
 
+        .form-group:last-child {
+            margin-bottom: 0;
+        }
+
         .form-label {
             display: block;
             font-size: 14px;
@@ -174,8 +178,10 @@
         /* Дополнительные ссылки */
         .extra-links {
             display: flex;
-            justify-content: space-between;
-            margin-top: 16px;
+            justify-content: left;
+            gap: 14px;
+            margin-bottom: 10px;
+            margin-left: 5px;
             font-size: 13px;
         }
 
@@ -277,9 +283,9 @@
             </div>
 
             <div class="extra-links">
-                <a href="#" class="extra-link">Забыли пароль?</a>
-                <span style="color: #e2e8f0;">|</span>
-                <a href="#" class="extra-link">Помощь</a>
+                <a href="#" class="extra-link">Не помню пароль</a>
+<#--                <span style="color: #e2e8f0;">|</span>-->
+<#--                <a href="#" class="extra-link">Помощь</a>-->
             </div>
 
             <button type="submit" class="btn-login">
