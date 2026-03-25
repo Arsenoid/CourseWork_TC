@@ -473,6 +473,7 @@
                     <#if user.isAdmin()>
                         <a href="/admin" class="nav-btn nav-btn-danger">👑 Админ-панель</a>
                         <a href="/customer" class="nav-btn nav-btn-primary">📋 Кабинет заказчика</a>
+                        <a href="/carrier" class="nav-btn nav-btn-primary">🚚 Кабинет перевозчика</a>
                     <#elseif user.isCustomer()>
                         <a href="/customer" class="nav-btn nav-btn-primary">📋 Кабинет заказчика</a>
                     <#elseif user.isCarrier()>

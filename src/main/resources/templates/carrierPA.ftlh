@@ -370,15 +370,16 @@
         .vehicle-status {
             display: inline-flex;
             align-items: center;
-            gap: 4px;
-            padding: 4px 10px;
+            /*gap: 8px;*/
+            padding: 7px 10px;
             border-radius: 100px;
             font-size: 11px;
             font-weight: 600;
+            white-space: nowrap;
         }
 
         .status-free {
-            background: #dcfce7;
+            background: #d8fde5;
             color: #15803d;
         }
 

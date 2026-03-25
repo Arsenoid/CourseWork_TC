@@ -253,6 +253,32 @@
             box-shadow: none;
         }
 
+        /* Кнопка назад */
+        .back-button-container {
+            margin-top: 32px;
+            padding-top: 24px;
+            border-top: 2px solid #eef2f6;
+            text-align: center;
+        }
+
+        .btn-back {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 12px 28px;
+            background: #f1f5f9;
+            color: #475569;
+            text-decoration: none;
+            border-radius: 60px;
+            font-weight: 500;
+            transition: all 0.2s;
+        }
+
+        .btn-back:hover {
+            background: #e2e8f0;
+            transform: translateY(-2px);
+        }
+
         /* Пустое состояние */
         .empty-state {
             text-align: center;
@@ -403,7 +429,7 @@
                                 <!-- Индикатор грузоподъемности -->
                                 <div class="capacity-indicator">
                                     <div class="capacity-bar">
-                                        <#assign percentage = (route.cargo_weight / vehicle.loadCapacity!1 * 100)?round>
+                                        <#assign percentage = (route.cargo_weight / vehicle.loadCapacity * 100)?round>
                                         <#if (percentage > 100)>
                                             <#assign percentage = 100>
                                         </#if>
@@ -411,7 +437,7 @@
                                              style="width: ${percentage}%"></div>
                                     </div>
                                     <div class="capacity-text">
-                                        <span>Загрузка: ${route.cargo_weight} / ${vehicle.loadCapacity!1} кг</span>
+                                        <span>Загрузка: ${route.cargo_weight} / ${vehicle.loadCapacity} кг</span>
                                         <#if isSufficient>
                                             <span class="capacity-sufficient">✓ Подходит</span>
                                         <#else>
@@ -429,9 +455,9 @@
                                     <input type="hidden" name="carrierId" value="${carrierId}">
                                     <input type="hidden" name="vehicleId" value="${vehicle.id}">
                                     <input type="hidden" name="_csrf" value="${_csrf.token}">
-                                    <button type="button"
+                                    <button type="submit"
                                             class="btn-select"
-                                            onclick="checkCapacity(${vehicle.id}, ${route.cargo_weight}, ${vehicle.loadCapacity!0})"
+<#--                                            onclick="checkCapacity(${vehicle.id}, ${route.cargo_weight}, ${vehicle.loadCapacity!0})"-->
                                             <#if !isSufficient>disabled</#if>>
                                         <#if isSufficient>
                                             ✅ Выбрать этот автомобиль
@@ -454,11 +480,17 @@
                     </a>
                 </div>
             </#if>
+            <!-- КНОПКА НАЗАД -->
+            <div class="back-button-container">
+                <a href="javascript:history.back()" class="btn-back">
+                    ← Вернуться к маршруту
+                </a>
+            </div>
         </div>
     </div>
 </div>
 
-<script>
+<#--<script>
     function checkCapacity(vehicleId, cargoWeight, loadCapacity) {
         if (loadCapacity < cargoWeight) {
             Swal.fire({
@@ -485,6 +517,6 @@
             });
         }
     }
-</script>
+</script>-->
 </body>
 </html>

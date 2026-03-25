@@ -223,7 +223,7 @@
         }
 
         .btn {
-            padding: 12px 28px;
+            padding: 12px 20px;
             border-radius: 40px;
             font-weight: 600;
             font-size: 14px;
@@ -447,8 +447,8 @@
 
             <!-- ДЕЙСТВИЯ -->
             <div class="actions-section">
-                <button onclick="window.location.href='/'" class="btn btn-back">
-                    ← Вернуться к списку
+                <button onclick="javascript:history.back()" class="btn btn-back">
+                    ← Вернуться назад
                 </button>
 
                 <#if user.id == route.customer.id || user.isAdmin()>

@@ -338,11 +338,9 @@
                     </div>
                 </div>
 
-                <div class="divider"></div>
-
                 <!-- КНОПКИ -->
                 <div class="form-actions">
-                    <a href="/" class="btn btn-secondary">
+                    <a onclick="javascript:history.back()" class="btn btn-secondary">
                         ← Отмена
                     </a>
                     <button type="submit" class="btn btn-primary">

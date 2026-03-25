@@ -184,15 +184,15 @@
         .status-badge-large {
             display: inline-flex;
             align-items: center;
-            gap: 8px;
-            padding: 8px 20px;
+            /*gap: 8px;*/
+            padding: 8px 15px;
             border-radius: 40px;
             font-weight: 600;
             font-size: 14px;
         }
 
         .status-free {
-            background: #dcfce7;
+            background: #caffdb;
             color: #15803d;
         }
 
@@ -433,9 +433,11 @@
             </div>
 
             <!-- КНОПКИ ДЕЙСТВИЙ -->
-            <#if user.id == vehicle.user.id>
-                <div class="actions-section">
-                    <button onclick="window.location.href='/carrier'" class="btn btn-back">← Вернуться к списку</button>
+            <div class="actions-section">
+                <button onclick="javascript:history.back()" class="btn btn-back">
+                    ← Вернуться назад
+                </button>
+                <#if user.id == vehicle.user.id>
                     <form action="/vehicles/edit_vehicle/${vehicle.vin}" method="get" style="margin: 0;">
                         <input type="hidden" name="_csrf" value="${_csrf.token}">
                         <button type="submit" class="btn btn-edit">✏️ Редактировать</button>
@@ -444,12 +446,8 @@
                         <input type="hidden" name="_csrf" value="${_csrf.token}">
                         <button type="submit" class="btn btn-delete">🗑️ Удалить авто</button>
                     </form>
-                </div>
-            <#else>
-                <div class="actions-section">
-                    <button onclick="window.location.href='/carrier'" class="btn btn-back">← Вернуться к списку</button>
-                </div>
-            </#if>
+                </#if>
+            </div>
         </div>
     </div>
 </div>

@@ -64,7 +64,7 @@ public class CarrierController {
         orderService.createOrder(order);
         vehicle.setOrderId(order.getId());
         vehicleService.updateVehicle(vehicle);
-        return "redirect:/" + order.getId();
+        return "redirect:/";
     }
 
     @PostMapping("/order/complete/{id}")
