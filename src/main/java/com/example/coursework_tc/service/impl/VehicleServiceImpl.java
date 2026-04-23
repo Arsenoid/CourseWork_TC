@@ -1,10 +1,9 @@
-package com.example.coursework_tc.service.Impl;
+package com.example.coursework_tc.service.impl;
 
 import com.example.coursework_tc.model.Image;
 import com.example.coursework_tc.model.User;
 import com.example.coursework_tc.model.Vehicle;
 import com.example.coursework_tc.model.enums.VehicleStatus;
-import com.example.coursework_tc.repository.UserRepository;
 import com.example.coursework_tc.repository.VehicleRepository;
 import com.example.coursework_tc.service.UserService;
 import com.example.coursework_tc.service.VehicleService;

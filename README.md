@@ -2,7 +2,7 @@
 
 ![Java](https://img.shields.io/badge/Java-21-orange?style=flat-square)
 ![Spring Boot](https://img.shields.io/badge/Spring%20Boot-3.x-brightgreen?style=flat-square)
-![MySQL](https://img.shields.io/badge/MySQL-8.0-blue?style=flat-square)
+![PostgreSQL](https://img.shields.io/badge/PostgreSQL-14+-blue?style=flat-square)
 ![Spring Security](https://img.shields.io/badge/Spring%20Security-6.x-green?style=flat-square)
 
 ## 📋 Описание проекта
@@ -47,7 +47,7 @@
 | **Веб-слой** | Spring MVC |
 | **Доступ к данным** | Spring Data JPA, Hibernate |
 | **Безопасность** | Spring Security, BCrypt, CSRF-защита |
-| **База данных** | MySQL 8.0 |
+| **База данных** | PostgreSQL 14+ |
 | **Шаблонизатор** | Freemarker |
 | **Сборка** | Maven |
 | **Версионирование** | Git |
@@ -100,7 +100,7 @@ CourseWork_TC/
 ### Предварительные требования
 - JDK 21 или выше
 - Maven 3.8+
-- MySQL 8.0
+- PostgreSQL 14+
 - Git
 
 ### Пошаговая инструкция
@@ -114,41 +114,48 @@ cd CourseWork_TC
 **2. Настройка базы данных**
 
 ```sql
-CREATE DATABASE transport_company_db CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+CREATE DATABASE transport_company;
 ```
-**3. Настройка подключения к БД**
 
-Открой файл `src/main/resources/application.yaml` и укажи свои данные:
+**3. Настройка подключения к БД через переменные окружения**
 
-```yaml
-spring:
-  datasource:
-    url: jdbc:mysql://localhost:3306/transport_company_db
-    username: root
-    password: your_password
-    driver-class-name: com.mysql.cj.jdbc.Driver
-  jpa:
-    hibernate:
-      ddl-auto: update
-    database: mysql
-    database-platform: org.hibernate.dialect.MySQLDialect
-    show-sql: false
-    properties:
-      hibernate:
-        format_sql: true
+Приложение читает настройки из переменных окружения (см. `src/main/resources/application.yaml`).
+
+Обязательные переменные для локального запуска:
+
+```bash
+export SPRING_DATASOURCE_URL="jdbc:postgresql://localhost:5432/transport_company"
+export SPRING_DATASOURCE_USERNAME="root"
+export SPRING_DATASOURCE_PASSWORD="root"
 ```
+
+Опционально:
+
+```bash
+export SPRING_JPA_HIBERNATE_DDL_AUTO="update"   # create / validate / none
+export SERVER_PORT="8080"
+```
+
+Если используешь zsh, можно сложить эти экспорты в `~/.zshrc` (или в отдельный локальный скрипт) и не коммитить их в репозиторий.
+
 **4. Сборка проекта**
+
 ```bash
 mvn clean package
 ```
+
 **5. Запуск приложения**
+
 ```bash
 java -jar target/CourseWorkTcApplication.jar
 ```
+
 Или через Maven:
+
 ```bash
 mvn spring-boot:run
 ```
+
 **6. Доступ к приложению**
 
 Открой браузер и перейди по адресу:
@@ -157,6 +164,6 @@ http://localhost:8080
 ```
 
 ### Важно!
-- Убедись, что MySQL сервер запущен перед запуском приложения
-- База данных `transport_company_db` должна быть создана заранее
-- При первом запуске таблицы создадутся автоматически (`ddl-auto: update`)
+- Убедись, что PostgreSQL запущен перед стартом приложения
+- База данных `transport_company` должна быть создана заранее (или используй свою и поменяй `SPRING_DATASOURCE_URL`)
+- При первом запуске таблицы создадутся автоматически (`SPRING_JPA_HIBERNATE_DDL_AUTO=update`)

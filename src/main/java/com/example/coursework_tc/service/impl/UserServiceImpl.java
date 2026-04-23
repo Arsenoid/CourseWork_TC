@@ -1,4 +1,4 @@
-package com.example.coursework_tc.service.Impl;
+package com.example.coursework_tc.service.impl;
 
 import com.example.coursework_tc.model.User;
 import com.example.coursework_tc.model.enums.Role;
@@ -35,8 +35,8 @@ public class UserServiceImpl implements UserService {
         user.setActive(true);
         user.setPassword(passwordEncoder.encode(user.getPassword()));
 //        user.getRoles().add(Role.ROLE_USER);
-        log.info("Created new user: {}", email);
         userRepository.save(user);
+        log.info("Created new user: {}", email);
         return true;
     }
 

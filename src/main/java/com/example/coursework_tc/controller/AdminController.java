@@ -2,7 +2,7 @@ package com.example.coursework_tc.controller;
 
 import com.example.coursework_tc.model.User;
 import com.example.coursework_tc.model.enums.Role;
-import com.example.coursework_tc.service.Impl.UserServiceImpl;
+import com.example.coursework_tc.service.impl.UserServiceImpl;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Controller;

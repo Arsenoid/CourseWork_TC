@@ -456,7 +456,7 @@
                     <p>Транспортная логистика</p>
                 </div>
 
-                <#if user.email??>
+                <#if user?? && user.email??>
                     <div class="user-section">
                         <span class="user-greeting">👋 Привет, <i>${user.username}</i></span>
                         <form action="/logout" method="post" style="margin: 0;">
@@ -468,7 +468,7 @@
             </div>
 
             <!-- НАВИГАЦИЯ ПО РОЛЯМ -->
-            <#if user.email??>
+            <#if user?? && user.email??>
                 <div class="nav-links">
                     <#if user.isAdmin()>
                         <a href="/admin" class="nav-btn nav-btn-danger">👑 Админ-панель</a>
@@ -485,7 +485,7 @@
 
         <!-- ОСНОВНОЙ КОНТЕНТ -->
         <div class="routes-section">
-            <#if user.email??>
+            <#if user?? && user.email??>
                 <div class="section-title">Доступные маршруты</div>
 
                 <div class="routes-grid">

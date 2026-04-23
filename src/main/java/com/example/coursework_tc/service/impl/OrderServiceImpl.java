@@ -1,4 +1,4 @@
-package com.example.coursework_tc.service.Impl;
+package com.example.coursework_tc.service.impl;
 
 import com.example.coursework_tc.model.Order;
 import com.example.coursework_tc.repository.OrderRepository;
@@ -7,7 +7,6 @@ import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
-import java.security.Principal;
 import java.util.List;
 
 @Slf4j

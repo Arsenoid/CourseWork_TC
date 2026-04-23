@@ -2,7 +2,7 @@ package com.example.coursework_tc.controller;
 
 import com.example.coursework_tc.model.User;
 import com.example.coursework_tc.model.enums.Role;
-import com.example.coursework_tc.service.Impl.UserServiceImpl;
+import com.example.coursework_tc.service.impl.UserServiceImpl;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -39,6 +39,9 @@ public class UserController {
 
     @PostMapping("/registration")
     public String createUser(User user, Model model, @RequestParam String role) {
+        if (user.getTel_number() != null && user.getTel_number().trim().isEmpty()) {
+            user.setTel_number(null);
+        }
         if ("ROLE_CARRIER".equals(role)) {
             user.getRoles().add(Role.ROLE_CARRIER);
         } else if ("ROLE_CUSTOMER".equals(role)) {

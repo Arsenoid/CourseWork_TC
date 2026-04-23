@@ -19,6 +19,15 @@ target/
 *.iml
 *.ipr
 
+### macOS ###
+.DS_Store
+**/.DS_Store
+
+### Local config overrides ###
+application-local.yaml
+application-local.yml
+application-local.properties
+
 ### NetBeans ###
 /nbproject/private/
 /nbbuild/
