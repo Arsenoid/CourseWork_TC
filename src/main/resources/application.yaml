@@ -1,6 +1,8 @@
 spring:
   application:
     name: CourseWork_TC
+  flyway:
+    baseline-on-migrate: true
   datasource:
     url: ${SPRING_DATASOURCE_URL:jdbc:postgresql://localhost:5432/${USER}}
     username: ${SPRING_DATASOURCE_USERNAME:${USER}}

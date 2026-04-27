@@ -1,10 +1,7 @@
 package com.example.coursework_tc.model;
 
-
 import jakarta.persistence.*;
 import lombok.Data;
-
-//import javax.persistence.*;
 
 @Entity
 @Data

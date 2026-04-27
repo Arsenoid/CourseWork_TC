@@ -1,11 +1,9 @@
 package com.example.coursework_tc.model;
 
-import com.example.coursework_tc.model.enums.RouteStatus;
 import com.example.coursework_tc.model.enums.VehicleStatus;
-import jakarta.validation.constraints.NotEmpty;
-import jakarta.validation.constraints.NotNull;
-import lombok.Data;
 import jakarta.persistence.*;
+import lombok.Data;
+
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -42,6 +40,10 @@ public class Vehicle {
     @ManyToOne(cascade = CascadeType.REFRESH, fetch = FetchType.LAZY)
     @JoinColumn
     private User user;
+
+    private Double lastLatitude;
+    private Double lastLongitude;
+    private LocalDateTime lastTelemetryAt;
 
     private LocalDateTime createdAt;
 
