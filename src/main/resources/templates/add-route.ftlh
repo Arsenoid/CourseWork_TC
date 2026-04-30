@@ -320,7 +320,7 @@
                                   name="cargo_description"
                                   class="form-input"
                                   rows="3"
-                                  placeholder="Опишите груз: характеристики, особые условия перевозки..."></textarea>
+                                  placeholder="Характеристики, особые условия перевозки..."></textarea>
                         <div class="input-hint">Детальное описание груза для перевозчика</div>
                     </div>
 
@@ -340,7 +340,7 @@
 
                 <!-- КНОПКИ -->
                 <div class="form-actions">
-                    <a onclick="javascript:history.back()" class="btn btn-secondary">
+                    <a onclick="history.back()" class="btn btn-secondary">
                         ← Отмена
                     </a>
                     <button type="submit" class="btn btn-primary">

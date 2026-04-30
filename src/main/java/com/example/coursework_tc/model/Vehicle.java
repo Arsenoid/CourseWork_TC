@@ -4,6 +4,7 @@ import com.example.coursework_tc.model.enums.VehicleStatus;
 import jakarta.persistence.*;
 import lombok.Data;
 
+import java.time.Instant;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -43,7 +44,7 @@ public class Vehicle {
 
     private Double lastLatitude;
     private Double lastLongitude;
-    private LocalDateTime lastTelemetryAt;
+    private Instant lastTelemetryAt;
 
     private LocalDateTime createdAt;
 

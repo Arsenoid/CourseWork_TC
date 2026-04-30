@@ -4,7 +4,7 @@ import com.example.coursework_tc.model.enums.TelemetrySource;
 import jakarta.persistence.*;
 import lombok.Data;
 
-import java.time.LocalDateTime;
+import java.time.Instant;
 
 @Data
 @Entity
@@ -21,6 +21,10 @@ public class TelemetryPoint {
     @JoinColumn(name = "vehicle_id", nullable = false)
     private Vehicle vehicle;
 
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "session_id")
+    private TrackingSession session;
+
     @Column(nullable = false)
     private Double latitude;
 
@@ -28,7 +32,7 @@ public class TelemetryPoint {
     private Double longitude;
 
     @Column(nullable = false)
-    private LocalDateTime recordedAt;
+    private Instant recordedAt;
 
     private Double speedKmh;
 

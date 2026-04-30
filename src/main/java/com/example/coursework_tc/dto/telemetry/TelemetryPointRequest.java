@@ -5,14 +5,15 @@ import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotNull;
 
-import java.time.LocalDateTime;
+import java.time.Instant;
 
 public record TelemetryPointRequest(
         @NotNull Long vehicleId,
         @NotNull @Min(-90) @Max(90) Double latitude,
         @NotNull @Min(-180) @Max(180) Double longitude,
-        LocalDateTime recordedAt,
+        Instant recordedAt,
         Double speedKmh,
-        @NotNull TelemetrySource source
+        @NotNull TelemetrySource source,
+        Long sessionId
 ) {
 }

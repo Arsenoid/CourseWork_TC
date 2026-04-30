@@ -23,15 +23,16 @@ public class TelemetryController {
 
     @PostMapping("/telemetry")
     public TelemetryPointResponse recordPoint(@Valid @RequestBody TelemetryPointRequest request) {
-        TelemetryPoint telemetryPoint = telemetryService.recordPoint(
+        TelemetryPoint point = telemetryService.recordPoint(
                 request.vehicleId(),
                 request.latitude(),
                 request.longitude(),
                 request.recordedAt(),
                 request.speedKmh(),
-                request.source()
+                request.source(),
+                request.sessionId()
         );
-        return TelemetryPointResponse.from(telemetryPoint);
+        return TelemetryPointResponse.from(point);
     }
 
     @GetMapping("/vehicles/{id}/telemetry")
@@ -43,6 +44,14 @@ public class TelemetryController {
             int limit
     ) {
         return telemetryService.findRecentPointsForVehicle(id, limit)
+                .stream()
+                .map(TelemetryPointResponse::from)
+                .toList();
+    }
+
+    @GetMapping("/sessions/{sessionId}/points")
+    public List<TelemetryPointResponse> getSessionPoints(@PathVariable Long sessionId) {
+        return telemetryService.findPointsBySession(sessionId)
                 .stream()
                 .map(TelemetryPointResponse::from)
                 .toList();

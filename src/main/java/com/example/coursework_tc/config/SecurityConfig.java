@@ -32,6 +32,8 @@ public class SecurityConfig {
                                 "/api/v1/vehicles/images/**",
                                 "/api/telemetry",
                                 "/api/vehicles/*/telemetry",
+                                "/api/sessions",
+                                "/api/sessions/**",
                                 "/vehicles",
                                 "/").permitAll()
                         .anyRequest().authenticated())

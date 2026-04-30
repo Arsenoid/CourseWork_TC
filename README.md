@@ -7,7 +7,7 @@
 
 ## 📋 Описание проекта
 
-**Курсовая работа студента группы ПИ22-2 Финансового университета при Правительстве РФ**
+**Дипломная работа студента группы ПИ22-2 Финансового университета при Правительстве РФ**
 
 Данный проект представляет собой клиент-серверное веб-приложение для автоматизации работы транспортной компании. Система разработана с использованием современного стека технологий Java и Spring, включает разграничение прав доступа для двух типов пользователей: менеджеров и водителей.
 
@@ -58,40 +58,35 @@
 ```
 CourseWork_TC/
 ├── src/
-│   └── main/
-│       ├── java/com/example/coursework_tc/
-│       │   ├── config/               # Конфигурационные классы (SecurityConfig)
-│       │   ├── controller/            # Контроллеры (обработка запросов)
-│       │   │   ├── AdminController.java
-│       │   │   ├── CarrierController.java
-│       │   │   ├── CustomerController.java
-│       │   │   ├── RouteController.java
-│       │   │   └── VehicleController.java
-│       │   ├── model/                 # Сущности и перечисления
-│       │   │   ├── enums/              # Role, RouteStatus, VehicleStatus
-│       │   │   ├── User.java
-│       │   │   ├── Route.java
-│       │   │   ├── Vehicle.java
-│       │   │   └── Order.java
-│       │   ├── repository/             # Интерфейсы для работы с БД (JPA)
-│       │   ├── service/                 # Бизнес-логика
-│       │   │   ├── impl/                # Реализации сервисов
-│       │   │   └── *Service.java        # Интерфейсы сервисов
-│       │   └── CourseWorkTcApplication.java  # Точка входа
-│       └── resources/
-│           ├── templates/               # Freemarker шаблоны (.ftlh)
-│           │   ├── login.ftlh
-│           │   ├── registration.ftlh
-│           │   ├── routes.ftlh
-│           │   ├── customerPA.ftlh
-│           │   ├── carrierPA.ftlh
-│           │   └── ...
-│           └── application.yaml          # Конфигурация приложения
-├── docs/                                 # Документация и скриншоты
-│   └── screenshots/                       # Изображения интерфейса
-├── README.md                               # Этот файл
-└── pom.xml                                  # Maven зависимости
+│   ├── main/
+│   │   ├── java/com/example/coursework_tc/
+│   │   │   ├── config/                 # Spring: безопасность и прочая конфигурация
+│   │   │   ├── controller/           # MVC и REST: страницы, API телеметрии и сессий
+│   │   │   ├── dto/                    # Объекты запросов/ответов для API
+│   │   │   │   ├── api/                # Общие ответы об ошибках и т.п.
+│   │   │   │   ├── session/          # DTO сессий трекинга
+│   │   │   │   └── telemetry/        # DTO точек телеметрии
+│   │   │   ├── exception/              # Исключения предметной области и валидации
+│   │   │   ├── model/                  # JPA-сущности
+│   │   │   │   └── enums/              # Перечисления (роли, статусы и др.)
+│   │   │   ├── repository/           # Spring Data JPA
+│   │   │   ├── service/                # Интерфейсы сервисов
+│   │   │   │   └── impl/               # Реализации бизнес-логики
+│   │   └── resources/
+│   │       ├── css/                    # Стили веб-интерфейса
+│   │       ├── db/migration/           # Flyway: версии схемы БД
+│   │       ├── static/                 # Статика (изображения и др.)
+│   │       └── templates/              # Freemarker-шаблоны страниц
+│   └── test/
+│       └── java/com/example/coursework_tc/  # Автотесты (в т.ч. controller)
+├── .mvn/                               # Обертка Maven (wrapper)
+├── README.md                           # Описание проекта
+├── pom.xml                             # Зависимости и сборка Maven
+├── mvnw                                # Запуск Maven wrapper (Unix/macOS)
+└── mvnw.cmd                            # Запуск Maven wrapper (Windows)
 ```
+
+Главный класс Spring Boot лежит в корне пакета `coursework_tc` рядом с перечисленными пакетами. Файлы конфигурации (`application.yaml` и др.) — в `src/main/resources/` на верхнем уровне этой папки.
 
 ---
 
@@ -114,7 +109,7 @@ cd CourseWork_TC
 **2. Настройка базы данных**
 
 ```sql
-CREATE DATABASE transport_company;
+CREATE DATABASE transport_company_db;
 ```
 
 **3. Настройка подключения к БД через переменные окружения**
@@ -124,19 +119,10 @@ CREATE DATABASE transport_company;
 Обязательные переменные для локального запуска:
 
 ```bash
-export SPRING_DATASOURCE_URL="jdbc:postgresql://localhost:5432/transport_company"
+export SPRING_DATASOURCE_URL="jdbc:postgresql://localhost:5432/transport_company_db"
 export SPRING_DATASOURCE_USERNAME="root"
 export SPRING_DATASOURCE_PASSWORD="root"
 ```
-
-Опционально:
-
-```bash
-export SPRING_JPA_HIBERNATE_DDL_AUTO="update"   # create / validate / none
-export SERVER_PORT="8080"
-```
-
-Если используешь zsh, можно сложить эти экспорты в `~/.zshrc` (или в отдельный локальный скрипт) и не коммитить их в репозиторий.
 
 **4. Сборка проекта**
 
@@ -165,5 +151,5 @@ http://localhost:8080
 
 ### Важно!
 - Убедись, что PostgreSQL запущен перед стартом приложения
-- База данных `transport_company` должна быть создана заранее (или используй свою и поменяй `SPRING_DATASOURCE_URL`)
+- База данных `transport_company_db` должна быть создана заранее (или используй свою и поменяй `SPRING_DATASOURCE_URL`)
 - При первом запуске таблицы создадутся автоматически (`SPRING_JPA_HIBERNATE_DDL_AUTO=update`)

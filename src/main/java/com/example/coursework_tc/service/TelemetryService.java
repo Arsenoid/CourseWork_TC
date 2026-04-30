@@ -3,7 +3,7 @@ package com.example.coursework_tc.service;
 import com.example.coursework_tc.model.TelemetryPoint;
 import com.example.coursework_tc.model.enums.TelemetrySource;
 
-import java.time.LocalDateTime;
+import java.time.Instant;
 import java.util.List;
 
 public interface TelemetryService {
@@ -12,10 +12,13 @@ public interface TelemetryService {
             Long vehicleId,
             double latitude,
             double longitude,
-            LocalDateTime recordedAt,
+            Instant recordedAt,
             Double speedKmh,
-            TelemetrySource source
+            TelemetrySource source,
+            Long sessionId
     );
 
     List<TelemetryPoint> findRecentPointsForVehicle(Long vehicleId, int limit);
+
+    List<TelemetryPoint> findPointsBySession(Long sessionId);
 }
