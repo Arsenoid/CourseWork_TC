@@ -35,6 +35,7 @@ public class SecurityConfig {
                                 "/api/sessions",
                                 "/api/sessions/**",
                                 "/vehicles",
+                                "/map",
                                 "/").permitAll()
                         .anyRequest().authenticated())
                 .formLogin(form -> form

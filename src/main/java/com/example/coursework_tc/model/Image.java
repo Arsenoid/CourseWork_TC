@@ -2,6 +2,8 @@ package com.example.coursework_tc.model;
 
 import jakarta.persistence.*;
 import lombok.Data;
+import org.hibernate.annotations.JdbcTypeCode;
+import org.hibernate.type.SqlTypes;
 
 @Entity
 @Data
@@ -15,7 +17,8 @@ public class Image {
     private Long size;
     private String contentType;
     private boolean isPreviewImage;
-    @Lob
+
+    @JdbcTypeCode(SqlTypes.VARBINARY)
     private byte[] bytes;
 
     @ManyToOne(cascade = CascadeType.REFRESH, fetch = FetchType.EAGER)

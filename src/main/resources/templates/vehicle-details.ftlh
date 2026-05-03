@@ -437,6 +437,9 @@
                 <button onclick="javascript:history.back()" class="btn btn-back">
                     ← Вернуться назад
                 </button>
+                <a href="/map?vehicleId=${vehicle.id}" class="btn btn-primary">
+                    📍 Трекер маршрутов
+                </a>
                 <#if user.id == vehicle.user.id>
                     <form action="/vehicles/edit_vehicle/${vehicle.vin}" method="get" style="margin: 0;">
                         <input type="hidden" name="_csrf" value="${_csrf.token}">
