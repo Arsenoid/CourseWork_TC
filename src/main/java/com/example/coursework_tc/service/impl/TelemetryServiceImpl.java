@@ -83,6 +83,10 @@ public class TelemetryServiceImpl implements TelemetryService {
             log.warn("Telemetry record failed: vehicleId={}, source={}, ts={}, reason={}",
                     vehicleId, source, recordedAt, e.getMessage());
             throw e;
+        } catch (Exception e) {
+            log.error("Unexpected error while recording telemetry: vehicleId={}, source={}, ts={}",
+                    vehicleId, source, recordedAt, e);
+            throw e;
         }
     }
 
