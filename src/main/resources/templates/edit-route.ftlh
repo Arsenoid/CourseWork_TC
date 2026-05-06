@@ -203,6 +203,71 @@
             margin-top: 4px;
         }
 
+        .form-alert {
+            display: none;
+            margin-bottom: 20px;
+            padding: 12px 14px;
+            border-radius: 12px;
+            font-size: 13px;
+            font-weight: 500;
+            border: 1px solid transparent;
+        }
+
+        .form-alert.show {
+            display: block;
+        }
+
+        .form-alert.error {
+            background: #fef2f2;
+            color: #dc2626;
+            border-color: #fecaca;
+        }
+
+        .route-calc-row {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+
+        .distance-input {
+            width: 220px;
+            max-width: 100%;
+        }
+
+        .btn-calc-route {
+            background: #eff6ff;
+            color: #1d4ed8;
+            border: 1px solid #bfdbfe;
+            padding: 11px 16px;
+            border-radius: 12px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            white-space: nowrap;
+        }
+
+        .btn-calc-route:hover {
+            background: #dbeafe;
+            transform: translateY(-1px);
+        }
+
+        .btn-calc-route:disabled {
+            opacity: .65;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .distance-status {
+            font-size: 12px;
+            min-height: 18px;
+            margin-top: 4px;
+        }
+
+        .distance-status.info { color: #64748b; }
+        .distance-status.loading { color: #b45309; }
+        .distance-status.success { color: #15803d; }
+        .distance-status.error { color: #dc2626; }
+
         /* Адаптивность */
         @media (max-width: 768px) {
             body {
@@ -228,6 +293,11 @@
 
             .form-actions {
                 flex-direction: column;
+            }
+
+            .route-calc-row {
+                flex-direction: column;
+                align-items: stretch;
             }
 
             .route-path {
@@ -279,6 +349,10 @@
         <div class="form-content">
             <form action="/customer/edit_route/${route.id}" method="post" enctype="multipart/form-data">
                 <input type="hidden" name="_csrf" value="${_csrf.token}">
+                <#if formError??>
+                    <div class="form-alert error show">⚠️ ${formError}</div>
+                </#if>
+                <div class="form-alert error" id="clientErrorAlert"></div>
 
                 <div class="form-grid">
                     <!-- Начальная точка -->
@@ -312,18 +386,23 @@
                     </div>
 
                     <!-- Расстояние -->
-                    <div class="form-group">
+                    <div class="form-group form-field-full">
                         <label class="form-label" for="distance">
                             <i>📏</i> Расстояние
                         </label>
-                        <input type="number"
-                               id="distance"
-                               name="distance"
-                               class="form-input"
-                               value="${route.distance!0}"
-                               placeholder="км"
-                               step="0.1">
-                        <div class="input-hint">Расстояние в километрах</div>
+                        <div class="route-calc-row">
+                            <input type="number"
+                                   id="distance"
+                                   name="distance"
+                                   class="form-input distance-input"
+                                   value="${route.distance!0}"
+                                   placeholder="км"
+                                   step="0.1"
+                                   readonly
+                                   required>
+                            <button type="button" id="manualDistanceBtn" class="btn-calc-route">Ввести вручную</button>
+                        </div>
+                        <div class="distance-status info" id="distanceStatus">Введите точки: расстояние считается автоматически. Если не сработало — включите ручной ввод.</div>
                     </div>
 
                     <!-- Оплата -->
@@ -387,7 +466,7 @@
 
                 <!-- КНОПКИ -->
                 <div class="form-actions">
-                    <a href="/${route.id}" class="btn btn-secondary">
+                    <a href="javascript:history.back()" class="btn btn-secondary">
                         ← Отмена
                     </a>
                     <button type="submit" class="btn btn-primary">
@@ -398,5 +477,126 @@
         </div>
     </div>
 </div>
+<script>
+    const startInput = document.getElementById('startLocation');
+    const endInput = document.getElementById('endLocation');
+    const distanceInput = document.getElementById('distance');
+    const manualButton = document.getElementById('manualDistanceBtn');
+    const distanceStatus = document.getElementById('distanceStatus');
+    const form = document.querySelector('form[action^="/customer/edit_route/"]');
+    const clientErrorAlert = document.getElementById('clientErrorAlert');
+    let calcTimer = null;
+    let requestVersion = 0;
+
+    function setDistanceState(state, text) {
+        distanceStatus.className = 'distance-status ' + state;
+        distanceStatus.textContent = text;
+    }
+
+    function showClientError(message) {
+        clientErrorAlert.textContent = '⚠️ ' + message;
+        clientErrorAlert.classList.add('show');
+    }
+
+    function clearClientError() {
+        clientErrorAlert.textContent = '';
+        clientErrorAlert.classList.remove('show');
+    }
+
+    async function geocode(address) {
+        const url = 'https://nominatim.openstreetmap.org/search?q='
+            + encodeURIComponent(address)
+            + '&format=json&limit=1&accept-language=ru';
+        const response = await fetch(url, { headers: { 'User-Agent': 'RouteTracerApp/1.0' } });
+        const data = await response.json();
+        if (!Array.isArray(data) || !data.length) {
+            throw new Error('Адрес не найден: ' + address);
+        }
+        return { lat: parseFloat(data[0].lat), lon: parseFloat(data[0].lon) };
+    }
+
+    async function fetchOsrmDistance(startCoord, endCoord) {
+        const url = 'https://router.project-osrm.org/route/v1/driving/'
+            + startCoord.lon + ',' + startCoord.lat + ';'
+            + endCoord.lon + ',' + endCoord.lat
+            + '?overview=false';
+        const response = await fetch(url);
+        const data = await response.json();
+        if (data.code !== 'Ok' || !Array.isArray(data.routes) || !data.routes.length) {
+            throw new Error('Маршрут между точками не найден');
+        }
+        return Math.round((data.routes[0].distance / 1000) * 10) / 10;
+    }
+
+    async function calculateDistance() {
+        const start = startInput.value.trim();
+        const end = endInput.value.trim();
+        clearClientError();
+
+        if (!start || !end) {
+            distanceInput.value = '';
+            setDistanceState('error', 'Укажите начальную и конечную точку');
+            return;
+        }
+
+        const currentVersion = ++requestVersion;
+        manualButton.disabled = true;
+        distanceInput.value = '';
+        setDistanceState('loading', 'Идет расчет маршрута...');
+
+        try {
+            const [startCoord, endCoord] = await Promise.all([geocode(start), geocode(end)]);
+            const km = await fetchOsrmDistance(startCoord, endCoord);
+
+            if (currentVersion !== requestVersion) return;
+            distanceInput.value = km;
+            distanceInput.readOnly = true;
+            setDistanceState('success', '✓ Расстояние рассчитано: ' + km + ' км');
+        } catch (error) {
+            if (currentVersion !== requestVersion) return;
+            distanceInput.value = '';
+            setDistanceState('error', error.message);
+        } finally {
+            if (currentVersion === requestVersion) {
+                manualButton.disabled = false;
+            }
+        }
+    }
+
+    function scheduleRealtimeCalculation() {
+        clearTimeout(calcTimer);
+        distanceInput.value = '';
+        setDistanceState('info', 'Адрес изменен, пересчитываю...');
+        calcTimer = setTimeout(calculateDistance, 900);
+    }
+
+    startInput.addEventListener('input', scheduleRealtimeCalculation);
+    endInput.addEventListener('input', scheduleRealtimeCalculation);
+
+    manualButton.addEventListener('click', function () {
+        const enabled = !distanceInput.readOnly;
+        if (enabled) {
+            distanceInput.readOnly = true;
+            manualButton.textContent = 'Ввести вручную';
+            setDistanceState('info', 'Ручной ввод выключен. Авторасчет активен.');
+            if (startInput.value.trim() && endInput.value.trim()) {
+                calculateDistance();
+            }
+        } else {
+            distanceInput.readOnly = false;
+            distanceInput.focus();
+            manualButton.textContent = 'Отключить ручной';
+            setDistanceState('info', 'Ручной ввод включен. Введите расстояние в км.');
+        }
+    });
+
+    form.addEventListener('submit', function (e) {
+        if (!distanceInput.value) {
+            e.preventDefault();
+            showClientError('Расстояние не рассчитано. Проверьте адреса или включите ручной ввод.');
+            setDistanceState('error', 'Перед сохранением укажите расстояние');
+        }
+    });
+</script>
 </body>
 </html>

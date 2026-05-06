@@ -6,6 +6,7 @@
     <title>Blizzard Trans — Детали маршрута</title>
     <link rel="stylesheet" href="/css/base.css">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
     <style>
         * {
             margin: 0;
@@ -340,6 +341,91 @@
         .card {
             animation: fadeInUp 0.4s ease-out;
         }
+
+        /* ── MAP SECTION ─────────────────────────────── */
+        #routeMapContainer {
+            border-radius: 20px;
+            overflow: hidden;
+            border: 1px solid #e2e8f0;
+            position: relative;
+        }
+
+        #routeMap {
+            width: 100%;
+            height: 360px;
+        }
+
+        .map-route-info {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 12px 16px;
+            background: #f8fafc;
+            border-top: 1px solid #e2e8f0;
+            font-size: 14px;
+            font-weight: 500;
+            color: #475569;
+            flex-wrap: wrap;
+        }
+
+        .map-route-info span {
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .map-route-pill {
+            background: #eff6ff;
+            color: #2563eb;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 13px;
+            font-weight: 600;
+        }
+
+        .map-loading-overlay {
+            position: absolute;
+            inset: 0;
+            background: #f8fafc;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            z-index: 5;
+            transition: opacity .3s;
+        }
+
+        .map-loading-overlay.hidden {
+            opacity: 0;
+            pointer-events: none;
+        }
+
+        .map-spinner {
+            width: 32px;
+            height: 32px;
+            border: 3px solid #e2e8f0;
+            border-top-color: #3b82f6;
+            border-radius: 50%;
+            animation: spin .7s linear infinite;
+        }
+
+        @keyframes spin { to { transform: rotate(360deg); } }
+
+        .map-loading-overlay p {
+            font-size: 13px;
+            color: #64748b;
+        }
+
+        .map-error-msg {
+            padding: 12px 16px;
+            background: #fef2f2;
+            color: #dc2626;
+            font-size: 13px;
+            font-weight: 500;
+            border-top: 1px solid #fecaca;
+            display: none;
+        }
     </style>
 </head>
 <body>
@@ -402,6 +488,28 @@
                             <div class="detail-value-small">${route.formattedUpdatedAt!''}</div>
                         </div>
                     </#if>
+                </div>
+            </div>
+
+            <!-- КАРТА МАРШРУТА -->
+            <div class="info-section">
+                <div class="section-title">
+                    <span>🗺️</span> Предполагаемый маршрут
+                </div>
+                <div id="routeMapContainer">
+                    <div id="routeMap"></div>
+                    <div class="map-loading-overlay" id="mapLoadingOverlay">
+                        <div class="map-spinner"></div>
+                        <p>Строим маршрут…</p>
+                    </div>
+                    <div class="map-error-msg" id="mapErrorMsg"></div>
+                    <div class="map-route-info" id="mapRouteInfo" style="display:none;">
+                        <span>📍 <strong>${route.startLocation!''}</strong></span>
+                        <span style="color:#cbd5e1;">→</span>
+                        <span>🎯 <strong>${route.endLocation!''}</strong></span>
+                        <span class="map-route-pill" id="routeDistance"></span>
+                        <span class="map-route-pill" id="routeDuration"></span>
+                    </div>
                 </div>
             </div>
 
@@ -475,12 +583,123 @@
     </div>
 </div>
 
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <script>
-    // Плавное появление карточки
     document.addEventListener('DOMContentLoaded', function() {
         const card = document.querySelector('.card');
-        if (card) {
-            card.style.animation = 'fadeInUp 0.5s ease-out';
+        if (card) card.style.animation = 'fadeInUp 0.5s ease-out';
+    });
+
+    const START = '${route.startLocation!""}';
+    const END   = '${route.endLocation!""}';
+
+    function hideMapLoading() {
+        const overlay = document.getElementById('mapLoadingOverlay');
+        overlay.classList.add('hidden');
+        setTimeout(() => overlay.style.display = 'none', 350);
+    }
+
+    function showMapError(msg) {
+        hideMapLoading();
+        const el = document.getElementById('mapErrorMsg');
+        el.textContent = '⚠️ ' + msg;
+        el.style.display = 'block';
+    }
+
+    async function geocode(address) {
+        const url = 'https://nominatim.openstreetmap.org/search?q='
+            + encodeURIComponent(address)
+            + '&format=json&limit=1&accept-language=ru';
+        const resp = await fetch(url, { headers: { 'User-Agent': 'RouteTracerApp/1.0' } });
+        const data = await resp.json();
+        if (!data.length) throw new Error('Адрес не найден: ' + address);
+        return { lat: parseFloat(data[0].lat), lon: parseFloat(data[0].lon), display: data[0].display_name };
+    }
+
+    async function fetchOsrmRoute(startCoord, endCoord) {
+        const url = 'https://router.project-osrm.org/route/v1/driving/'
+            + startCoord.lon + ',' + startCoord.lat + ';'
+            + endCoord.lon   + ',' + endCoord.lat
+            + '?overview=full&geometries=geojson';
+        const resp = await fetch(url);
+        const data = await resp.json();
+        if (data.code !== 'Ok' || !data.routes.length) throw new Error('OSRM: нет маршрута');
+        const route = data.routes[0];
+        return {
+            coords:      route.geometry.coordinates.map(([lon, lat]) => [lat, lon]),
+            distanceKm:  (route.distance / 1000).toFixed(1),
+            durationMin: Math.round(route.duration / 60)
+        };
+    }
+
+    document.addEventListener('DOMContentLoaded', async function() {
+        if (!START || !END) {
+            showMapError('Начальная или конечная точка маршрута не указана.');
+            return;
+        }
+
+        const map = L.map('routeMap');
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            attribution: '© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>',
+            maxZoom: 19
+        }).addTo(map);
+        map.attributionControl.setPrefix('');
+
+        try {
+            // Геокодируем оба адреса параллельно (Nominatim)
+            const [startCoord, endCoord] = await Promise.all([geocode(START), geocode(END)]);
+
+            // Маркер старта (зелёный)
+            const greenIcon = new L.Icon({
+                iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-green.png',
+                shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/images/marker-shadow.png',
+                iconSize: [25, 41], iconAnchor: [12, 41], popupAnchor: [1, -34], shadowSize: [41, 41]
+            });
+            // Маркер финиша (красный — стандартный Leaflet)
+            const redIcon = new L.Icon({
+                iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-red.png',
+                shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/images/marker-shadow.png',
+                iconSize: [25, 41], iconAnchor: [12, 41], popupAnchor: [1, -34], shadowSize: [41, 41]
+            });
+
+            L.marker([startCoord.lat, startCoord.lon], { icon: greenIcon })
+                .addTo(map).bindPopup('<b>Старт</b><br>' + START);
+            L.marker([endCoord.lat, endCoord.lon], { icon: redIcon })
+                .addTo(map).bindPopup('<b>Финиш</b><br>' + END);
+
+            try {
+                // Строим маршрут по дорогам (OSRM)
+                const route = await fetchOsrmRoute(startCoord, endCoord);
+                const polyline = L.polyline(route.coords, { color: '#3b82f6', weight: 5, opacity: 0.85 }).addTo(map);
+                map.fitBounds(polyline.getBounds(), { padding: [40, 40] });
+
+                const hours = Math.floor(route.durationMin / 60);
+                const mins  = route.durationMin % 60;
+                const durationText = hours > 0 ? hours + ' ч ' + mins + ' мин' : mins + ' мин';
+
+                document.getElementById('routeDistance').textContent = '📏 ' + route.distanceKm + ' км';
+                document.getElementById('routeDuration').textContent = '⏱ ' + durationText;
+            } catch (osrmErr) {
+                // OSRM недоступен — рисуем пунктирную прямую
+                console.warn('OSRM failed, drawing straight line:', osrmErr);
+                const line = L.polyline(
+                    [[startCoord.lat, startCoord.lon], [endCoord.lat, endCoord.lon]],
+                    { color: '#3b82f6', weight: 3, opacity: 0.7, dashArray: '8, 8' }
+                ).addTo(map);
+                map.fitBounds(line.getBounds(), { padding: [60, 60] });
+
+                document.getElementById('mapErrorMsg').textContent =
+                    'ℹ️ Маршрут по дорогам временно недоступен — показана прямая линия.';
+                document.getElementById('mapErrorMsg').style.cssText =
+                    'display:block; background:#eff6ff; color:#2563eb; border-top:1px solid #bfdbfe; padding:12px 16px; font-size:13px; font-weight:500;';
+            }
+
+            document.getElementById('mapRouteInfo').style.display = 'flex';
+            hideMapLoading();
+
+        } catch (err) {
+            console.error('Map init error:', err);
+            showMapError('Не удалось найти адреса на карте. ' + err.message);
         }
     });
 </script>

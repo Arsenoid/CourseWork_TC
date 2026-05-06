@@ -35,20 +35,27 @@ public class CustomerController {
     }
 
     @GetMapping("/add_route")
-    public String addRoute() {
+    public String addRoute(Model model) {
+        model.addAttribute("route", new Route());
         return "add-route";
     }
 
     @PostMapping("/add_route")
-    public String addRoute(Principal principal, Route route) {
-        routeService.addRoute(principal, route);
-        return "redirect:/customer";
+    public String addRoute(Principal principal, Route route, Model model) {
+        try {
+            routeService.addRoute(principal, route);
+            return "redirect:/customer";
+        } catch (Exception ex) {
+            model.addAttribute("route", route);
+            model.addAttribute("formError", "Не удалось рассчитать маршрут. Проверьте адреса и попробуйте снова.");
+            return "add-route";
+        }
     }
 
     @PostMapping("/delete_route/{id}")
     public String deleteRoute(@PathVariable Long id) {
         routeService.deleteRoute(id);
-        return "redirect:/";
+        return "redirect:/customer";
     }
 
     @GetMapping("/edit_route/{id}")
@@ -59,8 +66,15 @@ public class CustomerController {
     }
 
     @PostMapping("/edit_route/{id}")
-    public String editRoute(@PathVariable Long id, Route updatedRoute) {
-        routeService.editRoute(id, updatedRoute);
-        return "redirect:/customer";
+    public String editRoute(@PathVariable Long id, Route updatedRoute, Model model) {
+        try {
+            routeService.editRoute(id, updatedRoute);
+            return "redirect:/customer";
+        } catch (Exception ex) {
+            updatedRoute.setId(id);
+            model.addAttribute("route", updatedRoute);
+            model.addAttribute("formError", "Не удалось сохранить маршрут. Проверьте адреса и расстояние.");
+            return "edit-route";
+        }
     }
 }

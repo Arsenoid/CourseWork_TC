@@ -1,6 +1,8 @@
 package com.example.coursework_tc.controller;
 
+import com.example.coursework_tc.model.Route;
 import com.example.coursework_tc.model.Vehicle;
+import com.example.coursework_tc.service.OrderService;
 import com.example.coursework_tc.service.RouteService;
 import com.example.coursework_tc.service.UserService;
 import com.example.coursework_tc.service.VehicleService;
@@ -24,6 +26,7 @@ public class VehicleController {
     private final VehicleService vehicleService;
     private final UserService userService;
     private final RouteService routeService;
+    private final OrderService orderService;
 
     @GetMapping()
     public String getVehicles(@RequestParam(name = "searchWord", required = false) String car_model, Model model, Principal principal) {
@@ -40,6 +43,15 @@ public class VehicleController {
         model.addAttribute("images", vehicle.getImages());
         model.addAttribute("vehicle", vehicle);
         model.addAttribute("user", userService.getUserByPrincipal(principal));
+        if (vehicle.getOrderId() != null) {
+            var order = orderService.getOrderById(vehicle.getOrderId());
+            if (order != null && order.getRoute() != null) {
+                Route route = routeService.getRouteById(order.getRoute().getId());
+                model.addAttribute("currentRouteId", route.getId());
+                model.addAttribute("currentRouteStart", route.getStartLocation());
+                model.addAttribute("currentRouteEnd", route.getEndLocation());
+            }
+        }
         return "vehicle-details";
     }
 

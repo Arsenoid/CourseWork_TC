@@ -130,6 +130,71 @@
             margin-top: 4px;
         }
 
+        .form-alert {
+            display: none;
+            margin-bottom: 20px;
+            padding: 12px 14px;
+            border-radius: 12px;
+            font-size: 13px;
+            font-weight: 500;
+            border: 1px solid transparent;
+        }
+
+        .form-alert.show {
+            display: block;
+        }
+
+        .form-alert.error {
+            background: #fef2f2;
+            color: #dc2626;
+            border-color: #fecaca;
+        }
+
+        .route-calc-row {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+
+        .distance-input {
+            width: 220px;
+            max-width: 100%;
+        }
+
+        .btn-calc-route {
+            background: #eff6ff;
+            color: #1d4ed8;
+            border: 1px solid #bfdbfe;
+            padding: 11px 16px;
+            border-radius: 12px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            white-space: nowrap;
+        }
+
+        .btn-calc-route:hover {
+            background: #dbeafe;
+            transform: translateY(-1px);
+        }
+
+        .btn-calc-route:disabled {
+            opacity: .65;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .distance-status {
+            font-size: 12px;
+            min-height: 18px;
+            margin-top: 4px;
+        }
+
+        .distance-status.info { color: #64748b; }
+        .distance-status.loading { color: #b45309; }
+        .distance-status.success { color: #15803d; }
+        .distance-status.error { color: #dc2626; }
+
         /* Разделитель */
         .divider {
             margin: 24px 0;
@@ -208,6 +273,11 @@
             .form-actions {
                 flex-direction: column;
             }
+
+            .route-calc-row {
+                flex-direction: column;
+                align-items: stretch;
+            }
         }
 
         /* Анимация */
@@ -238,6 +308,10 @@
         <div class="form-content">
             <form action="/customer/add_route" method="post" enctype="multipart/form-data">
                 <input type="hidden" name="_csrf" value="${_csrf.token}">
+                <#if formError??>
+                    <div class="form-alert error show">⚠️ ${formError}</div>
+                </#if>
+                <div class="form-alert error" id="clientErrorAlert"></div>
 
                 <div class="form-grid">
                     <!-- Начальная точка -->
@@ -249,6 +323,7 @@
                                id="startLocation"
                                name="startLocation"
                                class="form-input"
+                               value="${route.startLocation!''}"
                                placeholder="Например: Москва, ул. Тверская 1"
                                required>
                         <div class="input-hint">Точный адрес отправления груза</div>
@@ -263,24 +338,30 @@
                                id="endLocation"
                                name="endLocation"
                                class="form-input"
+                               value="${route.endLocation!''}"
                                placeholder="Например: Санкт-Петербург, Невский пр. 10"
                                required>
                         <div class="input-hint">Точный адрес доставки груза</div>
                     </div>
 
-                    <!-- Расстояние -->
-                    <div class="form-group">
+                    <!-- Расстояние рассчитывается автоматически -->
+                    <div class="form-group form-field-full">
                         <label class="form-label" for="distance">
-                            <i>📏</i> Расстояние <span class="required-star">*</span>
+                            <i>📏</i> Расстояние
                         </label>
-                        <input type="number"
-                               id="distance"
-                               name="distance"
-                               class="form-input"
-                               placeholder="км"
-                               step="0.1"
-                               required>
-                        <div class="input-hint">Расстояние в километрах</div>
+                        <div class="route-calc-row">
+                            <input type="number"
+                                   id="distance"
+                                   name="distance"
+                                   class="form-input distance-input"
+                                   value="${route.distance!''}"
+                                   placeholder="км"
+                                   step="0.1"
+                                   readonly
+                                   required>
+                            <button type="button" id="manualDistanceBtn" class="btn-calc-route">Ввести вручную</button>
+                        </div>
+                        <div class="distance-status info" id="distanceStatus">Введите точки: расстояние считается автоматически. Если не сработало — включите ручной ввод.</div>
                     </div>
 
                     <!-- Оплата -->
@@ -292,6 +373,7 @@
                                id="payment"
                                name="payment"
                                class="form-input"
+                               value="${route.payment!''}"
                                placeholder="руб."
                                required>
                         <div class="input-hint">Сумма оплаты за доставку</div>
@@ -306,6 +388,7 @@
                                id="cargo_weight"
                                name="cargo_weight"
                                class="form-input"
+                               value="${route.cargo_weight!''}"
                                placeholder="кг"
                                required>
                         <div class="input-hint">Вес груза в килограммах</div>
@@ -320,7 +403,7 @@
                                   name="cargo_description"
                                   class="form-input"
                                   rows="3"
-                                  placeholder="Характеристики, особые условия перевозки..."></textarea>
+                                  placeholder="Характеристики, особые условия перевозки...">${route.cargo_description!''}</textarea>
                         <div class="input-hint">Детальное описание груза для перевозчика</div>
                     </div>
 
@@ -333,7 +416,7 @@
                                   name="order_notes"
                                   class="form-input"
                                   rows="2"
-                                  placeholder="Дополнительная информация для перевозчика..."></textarea>
+                                  placeholder="Дополнительная информация для перевозчика...">${route.order_notes!''}</textarea>
                         <div class="input-hint">Любые дополнительные пожелания или инструкции</div>
                     </div>
                 </div>
@@ -353,8 +436,131 @@
 </div>
 
 <script>
-    // Автофокус на первое поле
+    const startInput = document.getElementById('startLocation');
+    const endInput = document.getElementById('endLocation');
+    const distanceInput = document.getElementById('distance');
+    const manualButton = document.getElementById('manualDistanceBtn');
+    const distanceStatus = document.getElementById('distanceStatus');
+    const form = document.querySelector('form[action="/customer/add_route"]');
+    const clientErrorAlert = document.getElementById('clientErrorAlert');
+
+    let calcTimer = null;
+    let requestVersion = 0;
+
     document.getElementById('startLocation').focus();
+
+    function setDistanceState(state, text) {
+        distanceStatus.className = 'distance-status ' + state;
+        distanceStatus.textContent = text;
+    }
+
+    function showClientError(message) {
+        clientErrorAlert.textContent = '⚠️ ' + message;
+        clientErrorAlert.classList.add('show');
+    }
+
+    function clearClientError() {
+        clientErrorAlert.textContent = '';
+        clientErrorAlert.classList.remove('show');
+    }
+
+    async function geocode(address) {
+        const url = 'https://nominatim.openstreetmap.org/search?q='
+            + encodeURIComponent(address)
+            + '&format=json&limit=1&accept-language=ru';
+        const response = await fetch(url, { headers: { 'User-Agent': 'RouteTracerApp/1.0' } });
+        const data = await response.json();
+        if (!Array.isArray(data) || !data.length) {
+            throw new Error('Адрес не найден: ' + address);
+        }
+        return { lat: parseFloat(data[0].lat), lon: parseFloat(data[0].lon) };
+    }
+
+    async function fetchOsrmDistance(startCoord, endCoord) {
+        const url = 'https://router.project-osrm.org/route/v1/driving/'
+            + startCoord.lon + ',' + startCoord.lat + ';'
+            + endCoord.lon + ',' + endCoord.lat
+            + '?overview=false';
+        const response = await fetch(url);
+        const data = await response.json();
+        if (data.code !== 'Ok' || !Array.isArray(data.routes) || !data.routes.length) {
+            throw new Error('Маршрут между точками не найден');
+        }
+        return Math.round((data.routes[0].distance / 1000) * 10) / 10;
+    }
+
+    async function calculateDistance() {
+        const start = startInput.value.trim();
+        const end = endInput.value.trim();
+        clearClientError();
+
+        if (!start || !end) {
+            distanceInput.value = '';
+            setDistanceState('error', 'Укажите начальную и конечную точку');
+            return;
+        }
+
+        const currentVersion = ++requestVersion;
+        manualButton.disabled = true;
+        distanceInput.value = '';
+        setDistanceState('loading', 'Идет расчет маршрута...');
+
+        try {
+            const [startCoord, endCoord] = await Promise.all([geocode(start), geocode(end)]);
+            const km = await fetchOsrmDistance(startCoord, endCoord);
+
+            if (currentVersion !== requestVersion) return;
+            distanceInput.value = km;
+            distanceInput.readOnly = true;
+            setDistanceState('success', '✓ Расстояние рассчитано: ' + km + ' км');
+        } catch (error) {
+            if (currentVersion !== requestVersion) return;
+            distanceInput.value = '';
+            setDistanceState('error', error.message);
+        } finally {
+            if (currentVersion === requestVersion) {
+                manualButton.disabled = false;
+            }
+        }
+    }
+
+    function scheduleRealtimeCalculation() {
+        clearTimeout(calcTimer);
+        distanceInput.value = '';
+        setDistanceState('info', 'Адрес изменен, пересчитываю...');
+        calcTimer = setTimeout(calculateDistance, 900);
+    }
+
+    startInput.addEventListener('input', scheduleRealtimeCalculation);
+    endInput.addEventListener('input', scheduleRealtimeCalculation);
+    manualButton.addEventListener('click', function () {
+        const enabled = !distanceInput.readOnly;
+        if (enabled) {
+            distanceInput.readOnly = true;
+            manualButton.textContent = 'Ввести вручную';
+            setDistanceState('info', 'Ручной ввод выключен. Авторасчет активен.');
+            if (startInput.value.trim() && endInput.value.trim()) {
+                calculateDistance();
+            }
+        } else {
+            distanceInput.readOnly = false;
+            distanceInput.focus();
+            manualButton.textContent = 'Отключить ручной';
+            setDistanceState('info', 'Ручной ввод включен. Введите расстояние в км.');
+        }
+    });
+
+    form.addEventListener('submit', function (e) {
+        if (!distanceInput.value) {
+            e.preventDefault();
+            showClientError('Расстояние не рассчитано. Проверьте адреса или нажмите "Рассчитать маршрут".');
+            setDistanceState('error', 'Перед отправкой нужно успешно рассчитать маршрут');
+        }
+    });
+
+    if (startInput.value.trim() && endInput.value.trim()) {
+        calculateDistance();
+    }
 </script>
 </body>
 </html>

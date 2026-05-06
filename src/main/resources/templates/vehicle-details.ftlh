@@ -78,8 +78,8 @@
 
         .images-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-            gap: 20px;
+            grid-template-columns: repeat(auto-fill, minmax(min(100%, 420px), 1fr));
+            gap: 24px;
         }
 
         .image-card {
@@ -97,7 +97,8 @@
 
         .image-card img {
             width: 100%;
-            height: 220px;
+            aspect-ratio: 4 / 3;
+            height: auto;
             object-fit: cover;
             display: block;
         }
@@ -237,9 +238,44 @@
             transform: translateX(4px);
         }
 
+        .route-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 20px;
+            background: #ecfeff;
+            color: #0e7490;
+            text-decoration: none;
+            border-radius: 40px;
+            font-weight: 500;
+            transition: all 0.2s;
+        }
+
+        .route-link:hover {
+            background: #cffafe;
+            transform: translateX(4px);
+        }
+
+        .route-active-main {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+            flex: 1;
+            min-width: 0;
+        }
+
+        .route-active-path {
+            font-size: 15px;
+            font-weight: 600;
+            color: #0f172a;
+            line-height: 1.35;
+            word-break: break-word;
+        }
+
         /* Кнопки действий */
         .actions-section {
             display: flex;
+            justify-content: space-between;
             gap: 16px;
             margin-top: 16px;
             padding-top: 24px;
@@ -259,6 +295,8 @@
             display: inline-flex;
             align-items: center;
             gap: 8px;
+            min-height: 44px;
+            line-height: 1;
         }
 
         .btn-primary {
@@ -418,34 +456,46 @@
                 <#if vehicle.status == "FREE">
                     <span class="status-badge-large status-free">🟢 Свободен</span>
                 <#elseif vehicle.status == "BUSY">
-                    <span class="status-badge-large status-busy">🔴 На рейсе</span>
+                    <span class="status-badge-large status-busy">🔴 Занят</span>
                 <#else>
                     <span class="status-badge-large status-broken">⚠️ Неисправен</span>
                 </#if>
             </div>
 
+            <#if vehicle.status == "BUSY" && currentRouteId??>
+                <div class="owner-section">
+                    <div class="route-active-main">
+                        <span class="status-label">🛣️ Активный маршрут</span>
+                        <div class="route-active-path">
+                            ${currentRouteStart!''} → ${currentRouteEnd!''}
+                        </div>
+                    </div>
+                    <a href="/${currentRouteId}" class="route-link">Подробнее</a>
+                </div>
+            </#if>
+
             <!-- ВЛАДЕЛЕЦ -->
             <div class="owner-section">
                 <span class="status-label">👤 Владелец:</span>
                 <a href="/user/${vehicle.user.id}" class="owner-link">
-                    ${vehicle.user.username!''} → <span style="font-size: 12px;">${vehicle.user.email!''}</span>
+                    ${vehicle.user.username!''} →
                 </a>
             </div>
 
             <!-- КНОПКИ ДЕЙСТВИЙ -->
             <div class="actions-section">
-                <button onclick="javascript:history.back()" class="btn btn-back">
+                <button onclick="history.back()" class="btn btn-back">
                     ← Вернуться назад
                 </button>
                 <a href="/map?vehicleId=${vehicle.id}" class="btn btn-primary">
                     📍 Трекер маршрутов
                 </a>
                 <#if user.id == vehicle.user.id>
-                    <form action="/vehicles/edit_vehicle/${vehicle.vin}" method="get" style="margin: 0;">
+                    <form action="/vehicles/edit_vehicle/${vehicle.vin}" method="get">
                         <input type="hidden" name="_csrf" value="${_csrf.token}">
                         <button type="submit" class="btn btn-edit">✏️ Редактировать</button>
                     </form>
-                    <form action="/vehicles/delete_vehicle/${vehicle.id}" method="post" style="margin: 0;">
+                    <form action="/vehicles/delete_vehicle/${vehicle.id}" method="post">
                         <input type="hidden" name="_csrf" value="${_csrf.token}">
                         <button type="submit" class="btn btn-delete">🗑️ Удалить авто</button>
                     </form>
