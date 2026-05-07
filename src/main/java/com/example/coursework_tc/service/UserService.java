@@ -19,4 +19,7 @@ public interface UserService {
     User getUserByPrincipal(Principal principal);
 
     User getUserById(Long id);
+
+    String updatePersonalData(Long userId, String username, String email,
+                              String telNumber, String dateOfBirth, Integer experience);
 }

@@ -10,6 +10,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.security.Principal;
+import java.time.LocalDate;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
@@ -78,5 +79,46 @@ public class UserServiceImpl implements UserService {
     @Override
     public User getUserById(Long id) {
         return userRepository.findById(id).orElse(null);
+    }
+
+    @Override
+    public String updatePersonalData(Long userId, String username, String email,
+                                     String telNumber, String dateOfBirth, Integer experience) {
+        User user = userRepository.findById(userId).orElse(null);
+        if (user == null) return "Пользователь не найден.";
+
+        String uname = username == null ? "" : username.trim();
+        String mail  = email    == null ? "" : email.trim();
+        if (uname.isEmpty()) return "Имя пользователя не может быть пустым.";
+        if (mail.isEmpty())  return "Email не может быть пустым.";
+
+        String phone = (telNumber == null || telNumber.trim().isEmpty()) ? null : telNumber.trim();
+
+        User byEmail = userRepository.findByEmail(mail);
+        if (byEmail != null && !byEmail.getId().equals(userId))
+            return "Пользователь с таким email уже существует.";
+
+        if (phone != null) {
+            for (User u : userRepository.findAll()) {
+                if (!u.getId().equals(userId) && phone.equals(u.getTel_number()))
+                    return "Пользователь с таким номером телефона уже существует.";
+            }
+        }
+
+        try {
+            user.setDateOfBirth(
+                (dateOfBirth == null || dateOfBirth.isBlank()) ? null : LocalDate.parse(dateOfBirth)
+            );
+        } catch (Exception e) {
+            return "Некорректный формат даты рождения.";
+        }
+
+        user.setUsername(uname);
+        user.setEmail(mail);
+        user.setTel_number(phone);
+        user.setExperience(experience == null ? 0 : Math.max(experience, 0));
+        userRepository.save(user);
+        log.info("Updated personal data for user id={}", userId);
+        return null;
     }
 }

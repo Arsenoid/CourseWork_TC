@@ -395,7 +395,7 @@
                                    id="distance"
                                    name="distance"
                                    class="form-input distance-input"
-                                   value="${route.distance!0}"
+                               value="${(route.distance!0)?c}"
                                    placeholder="км"
                                    step="0.1"
                                    readonly
@@ -414,7 +414,7 @@
                                id="payment"
                                name="payment"
                                class="form-input"
-                               value="${route.payment!0}"
+                               value="${(route.payment!0)?c}"
                                placeholder="руб."
                                required>
                         <div class="input-hint">Сумма оплаты за доставку</div>
@@ -429,7 +429,7 @@
                                id="cargo_weight"
                                name="cargo_weight"
                                class="form-input"
-                               value="${route.cargo_weight!0}"
+                               value="${(route.cargo_weight!0)?c}"
                                placeholder="кг"
                                required>
                         <div class="input-hint">Вес груза в килограммах</div>

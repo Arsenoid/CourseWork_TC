@@ -418,11 +418,17 @@
                 </#if>
             </div>
 
-            <!-- КНОПКА НАЗАД -->
-            <div class="back-button-container">
-                <a href="javascript:history.back()" class="btn-back">
-                    ← Вернуться назад
+            <!-- КНОПКИ ДЕЙСТВИЙ -->
+            <div class="back-button-container" style="display:flex; gap:12px; justify-content:center; flex-wrap:wrap;">
+                <a href="/" class="btn-back">
+                    ← Вернуться на главную
                 </a>
+                <#if isOwnProfile?? && isOwnProfile>
+                    <a href="/profile/edit" class="btn-back"
+                       style="background:#3b82f6; color:white;">
+                        ✏️ Редактировать профиль
+                    </a>
+                </#if>
             </div>
 
             <!-- СООБЩЕНИЕ ОБ ОШИБКЕ -->

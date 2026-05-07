@@ -82,12 +82,20 @@
             font-size: 14px;
             font-weight: 500;
             color: #334155;
+            text-decoration: none;
+            padding: 8px 12px;
+            border-radius: 40px;
+            transition: all 0.2s;
         }
 
         .user-greeting i {
             color: #3b82f6;
             font-style: normal;
             font-weight: 600;
+        }
+
+        .user-greeting:hover {
+            background: #e4eaff;
         }
 
         .logout-btn {
@@ -103,7 +111,7 @@
         }
 
         .logout-btn:hover {
-            background: #fef2f2;
+            background: #ffe7e7;
         }
 
         /* Навигация */
@@ -385,14 +393,6 @@
             transform: translateY(-2px);
         }
 
-        .register-link {
-            display: inline-block;
-            margin-top: 16px;
-            color: #3b82f6;
-            text-decoration: none;
-            font-size: 14px;
-        }
-
         hr {
             border: none;
             border-top: 1px solid #eef2f6;
@@ -458,7 +458,7 @@
 
                 <#if user?? && user.email??>
                     <div class="user-section">
-                        <span class="user-greeting">👋 Привет, <i>${user.username}</i></span>
+                        <a href="/user/${user.id}" class="user-greeting">👋 Привет, <i>${user.username}</i></a>
                         <form action="/logout" method="post" style="margin: 0;">
                             <input type="hidden" name="_csrf" value="${_csrf.token}">
                             <button type="submit" class="logout-btn">Выйти</button>

@@ -117,6 +117,20 @@
             transform: translateY(-2px);
         }
 
+        .income-chip {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 10px 18px;
+            border-radius: 40px;
+            background: #ecfdf3;
+            color: #15803d;
+            border: 1px solid #bbf7d0;
+            font-weight: 600;
+            font-size: 14px;
+            white-space: nowrap;
+        }
+
         /* Секции */
         .content-section {
             padding: 32px;
@@ -212,7 +226,7 @@
         .status-in-process:before {
             content: "♻️";
             font-size: 12px;
-            margin-right: 0px;
+            margin-right: 0;
         }
 
         .status-completed {
@@ -464,6 +478,10 @@
                 justify-content: center;
             }
 
+            .income-chip {
+                justify-content: center;
+            }
+
             .content-section {
                 padding: 20px;
             }
@@ -532,9 +550,19 @@
         </div>
 
         <!-- НАВИГАЦИЯ -->
+        <#assign totalIncome = 0>
+        <#list orders as order>
+            <#if order.route.status == "COMPLETED">
+                <#assign totalIncome += (order.route.payment!0)>
+            </#if>
+        </#list>
         <div class="nav-bar">
             <div class="nav-links">
                 <a href="/" class="nav-link nav-link-secondary">🏠 На главную</a>
+            </div>
+            <div class="income-chip">
+                <span>💵 Доход:</span>
+                <span>${totalIncome?string["0.##"]} ₽</span>
             </div>
         </div>
 
