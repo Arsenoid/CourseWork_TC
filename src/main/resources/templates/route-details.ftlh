@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Blizzard Trans — Детали маршрута</title>
+    <title>Route Tracer — Детали маршрута</title>
     <link rel="stylesheet" href="/css/base.css">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
@@ -426,6 +426,34 @@
             border-top: 1px solid #fecaca;
             display: none;
         }
+
+        .progress-grid {
+            margin-top: 14px;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+            gap: 10px;
+        }
+
+        .progress-item {
+            background: #f8fafc;
+            border: 1px solid #e2e8f0;
+            border-radius: 12px;
+            padding: 10px 12px;
+        }
+
+        .progress-k {
+            font-size: 11px;
+            color: #64748b;
+            text-transform: uppercase;
+            letter-spacing: .3px;
+            margin-bottom: 3px;
+        }
+
+        .progress-v {
+            font-size: 16px;
+            font-weight: 700;
+            color: #0f172a;
+        }
     </style>
 </head>
 <body>
@@ -511,6 +539,32 @@
                         <span class="map-route-pill" id="routeDuration"></span>
                     </div>
                 </div>
+                <div class="progress-grid" id="routeProgressGrid">
+                    <div class="progress-item">
+                        <div class="progress-k">Прогресс</div>
+                        <div class="progress-v" id="rp-progress">—</div>
+                    </div>
+                    <div class="progress-item">
+                        <div class="progress-k">Пройдено</div>
+                        <div class="progress-v" id="rp-covered">—</div>
+                    </div>
+                    <div class="progress-item">
+                        <div class="progress-k">Осталось</div>
+                        <div class="progress-v" id="rp-remaining">—</div>
+                    </div>
+                    <div class="progress-item">
+                        <div class="progress-k">ETA</div>
+                        <div class="progress-v" id="rp-eta">—</div>
+                    </div>
+                    <div class="progress-item">
+                        <div class="progress-k">Сессия</div>
+                        <div class="progress-v" id="rp-session">—</div>
+                    </div>
+                    <div class="progress-item">
+                        <div class="progress-k">Обновлено</div>
+                        <div class="progress-v" id="rp-updated">—</div>
+                    </div>
+                </div>
             </div>
 
             <!-- ОПИСАНИЕ ГРУЗА -->
@@ -559,6 +613,12 @@
                     ← Вернуться назад
                 </button>
 
+                <#if assignedVehicleId?? && (user.isCarrier() || user.isAdmin()) && status == "Заказ находится в процессе доставки.">
+                    <a href="/map?vehicleId=${assignedVehicleId?c}&routeId=${route.id?c}" class="btn btn-secondary">
+                        📍 Открыть трекинг
+                    </a>
+                </#if>
+
                 <#if user.id == route.customer.id || user.isAdmin()>
                     <form action="/delete_route/${route.id}" method="post" style="margin: 0;">
                         <input type="hidden" name="_csrf" value="${_csrf.token}">
@@ -592,6 +652,10 @@
 
     const START = '${route.startLocation!""}';
     const END   = '${route.endLocation!""}';
+    const ROUTE_ID = ${route.id?c};
+    let mapInstance = null;
+    let factualTrackPolyline = null;
+    let currentPositionMarker = null;
 
     function hideMapLoading() {
         const overlay = document.getElementById('mapLoadingOverlay');
@@ -632,18 +696,66 @@
         };
     }
 
+    function formatEta(minutes) {
+        if (minutes == null || minutes <= 0) return '—';
+        const h = Math.floor(minutes / 60);
+        const m = minutes % 60;
+        return h > 0 ? h + ' ч ' + m + ' мин' : m + ' мин';
+    }
+
+    async function refreshRouteProgress() {
+        try {
+            const progress = await fetch('/api/routes/' + ROUTE_ID + '/progress').then(r => r.json());
+            document.getElementById('rp-progress').textContent = (progress.progressPercent ?? 0) + '%';
+            document.getElementById('rp-covered').textContent = (progress.coveredDistanceKm ?? 0) + ' км';
+            document.getElementById('rp-remaining').textContent = (progress.remainingDistanceKm ?? 0) + ' км';
+            document.getElementById('rp-eta').textContent = formatEta(progress.etaMinutes);
+            document.getElementById('rp-session').textContent = progress.sessionId ? ('#' + progress.sessionId) : '—';
+            document.getElementById('rp-updated').textContent = new Date().toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+
+            if (progress.sessionId && mapInstance) {
+                const points = await fetch('/api/sessions/' + progress.sessionId + '/points').then(r => r.json());
+                if (points && points.length > 1) {
+                    const latLngs = points.map(p => [p.latitude, p.longitude]);
+                    if (factualTrackPolyline) {
+                        factualTrackPolyline.setLatLngs(latLngs);
+                    } else {
+                        factualTrackPolyline = L.polyline(latLngs, {
+                            color: '#16a34a',
+                            weight: 4,
+                            opacity: 0.9
+                        }).addTo(mapInstance);
+                    }
+                    const last = latLngs[latLngs.length - 1];
+                    if (currentPositionMarker) {
+                        currentPositionMarker.setLatLng(last);
+                    } else {
+                        currentPositionMarker = L.circleMarker(last, {
+                            radius: 8,
+                            color: '#0f172a',
+                            fillColor: '#22c55e',
+                            fillOpacity: 1
+                        }).addTo(mapInstance).bindPopup('Текущая позиция');
+                    }
+                }
+            }
+        } catch (e) {
+            console.warn('Route progress refresh failed:', e);
+        }
+    }
+
     document.addEventListener('DOMContentLoaded', async function() {
         if (!START || !END) {
             showMapError('Начальная или конечная точка маршрута не указана.');
             return;
         }
 
-        const map = L.map('routeMap');
+        mapInstance = L.map('routeMap');
         L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
             attribution: '© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>',
             maxZoom: 19
-        }).addTo(map);
-        map.attributionControl.setPrefix('');
+        }).addTo(mapInstance);
+        mapInstance.attributionControl.setPrefix('');
 
         try {
             // Геокодируем оба адреса параллельно (Nominatim)
@@ -663,15 +775,15 @@
             });
 
             L.marker([startCoord.lat, startCoord.lon], { icon: greenIcon })
-                .addTo(map).bindPopup('<b>Старт</b><br>' + START);
+                .addTo(mapInstance).bindPopup('<b>Старт</b><br>' + START);
             L.marker([endCoord.lat, endCoord.lon], { icon: redIcon })
-                .addTo(map).bindPopup('<b>Финиш</b><br>' + END);
+                .addTo(mapInstance).bindPopup('<b>Финиш</b><br>' + END);
 
             try {
                 // Строим маршрут по дорогам (OSRM)
                 const route = await fetchOsrmRoute(startCoord, endCoord);
-                const polyline = L.polyline(route.coords, { color: '#3b82f6', weight: 5, opacity: 0.85 }).addTo(map);
-                map.fitBounds(polyline.getBounds(), { padding: [40, 40] });
+                const polyline = L.polyline(route.coords, { color: '#3b82f6', weight: 5, opacity: 0.85 }).addTo(mapInstance);
+                mapInstance.fitBounds(polyline.getBounds(), { padding: [40, 40] });
 
                 const hours = Math.floor(route.durationMin / 60);
                 const mins  = route.durationMin % 60;
@@ -685,8 +797,8 @@
                 const line = L.polyline(
                     [[startCoord.lat, startCoord.lon], [endCoord.lat, endCoord.lon]],
                     { color: '#3b82f6', weight: 3, opacity: 0.7, dashArray: '8, 8' }
-                ).addTo(map);
-                map.fitBounds(line.getBounds(), { padding: [60, 60] });
+                ).addTo(mapInstance);
+                mapInstance.fitBounds(line.getBounds(), { padding: [60, 60] });
 
                 document.getElementById('mapErrorMsg').textContent =
                     'ℹ️ Маршрут по дорогам временно недоступен — показана прямая линия.';
@@ -696,7 +808,8 @@
 
             document.getElementById('mapRouteInfo').style.display = 'flex';
             hideMapLoading();
-
+            await refreshRouteProgress();
+            setInterval(refreshRouteProgress, 5000);
         } catch (err) {
             console.error('Map init error:', err);
             showMapError('Не удалось найти адреса на карте. ' + err.message);

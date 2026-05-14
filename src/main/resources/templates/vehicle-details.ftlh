@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Blizzard Trans — Детали транспорта</title>
+    <title>Route Tracer — Детали транспорта</title>
     <link rel="stylesheet" href="/css/base.css">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <style>
@@ -487,7 +487,7 @@
                 <button onclick="history.back()" class="btn btn-back">
                     ← Вернуться назад
                 </button>
-                <a href="/map?vehicleId=${vehicle.id}" class="btn btn-primary">
+                <a href="/map?vehicleId=${vehicle.id}<#if currentRouteId??>&routeId=${currentRouteId}</#if>" class="btn btn-primary">
                     📍 Трекер маршрутов
                 </a>
                 <#if user.id == vehicle.user.id>

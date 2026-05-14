@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Blizzard Trans — Регистрация</title>
+    <title>Route Tracer — Регистрация</title>
     <link rel="stylesheet" href="/css/base.css">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <style>
@@ -243,7 +243,7 @@
         <div class="register-header">
             <div class="logo">🚚️</div>
             <h1>Создание аккаунта</h1>
-            <p>Присоединяйтесь к Blizzard Trans</p>
+            <p>Присоединяйтесь к Route Tracer</p>
             <#if role == "ROLE_CARRIER">
                 <span class="role-badge">🚚 Регистрация как Исполнитель (Водитель)</span>
             <#elseif role == "ROLE_CUSTOMER">

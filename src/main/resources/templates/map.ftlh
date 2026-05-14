@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Blizzard Trans — Трекер маршрутов</title>
+    <title>Route Tracer — Трекер маршрутов</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <!-- Яндекс.Карты API 2.1 — российский картографический сервис -->
     <!-- Получить ключ: https://developer.tech.yandex.ru/ → «JavaScript API и HTTP Геокодер» -->
@@ -241,6 +241,12 @@
         }
         .btn-secondary:hover:not(:disabled) { background: #e2e8f0; }
 
+        .track-actions {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
         /* ── INFO BLOCKS ──────────────────────────────────────────── */
         .info-row {
             display: flex;
@@ -447,10 +453,13 @@
                 </p>
             </div>
 
-            <!-- Start / Stop -->
-            <div>
+            <!-- Start / Continue / Stop -->
+            <div class="track-actions">
                 <button class="btn btn-primary" id="btnStart" onclick="startTracking()">
                     ▶ Начать запись
+                </button>
+                <button class="btn btn-secondary" id="btnContinue" onclick="continueTracking()">
+                    ↻ Продолжить запись
                 </button>
                 <button class="btn btn-danger hidden" id="btnStop" onclick="stopTracking()">
                     ■ Остановить запись
@@ -555,6 +564,7 @@
     // ── CONFIG FROM SERVER ────────────────────────────────────────
     const VEHICLE_ID      = <#if vehicleId??>${vehicleId?c}<#else>null</#if>;
     const INITIAL_SESSION = <#if sessionId??>${sessionId?c}<#else>null</#if>;
+    const ROUTE_ID        = <#if routeId??>${routeId?c}<#else>null</#if>;
     <#if vehicle?? && vehicle.lastLatitude?? && vehicle.lastLongitude??>
     const VEHICLE_LAST_POS = [${vehicle.lastLatitude?c}, ${vehicle.lastLongitude?c}];
     <#else>
@@ -565,6 +575,17 @@
     const MOSCOW = [55.7558, 37.6176];
     const POLL_MS = 3000;
     const SIM_MS  = 2000;
+    const GEO_WATCH_OPTIONS = {
+        enableHighAccuracy: true,
+        maximumAge: 60000,
+        timeout: 45000
+    };
+    const GEO_FALLBACK_OPTIONS = {
+        enableHighAccuracy: false,
+        maximumAge: 60000,
+        timeout: 45000
+    };
+    const GEO_POLL_MS = 15000;
 
     // ── STATE ─────────────────────────────────────────────────────
     let map            = null;
@@ -585,6 +606,7 @@
     let geoPollTimer   = null;
     let lastGeoTime    = 0;
     let simState       = null;
+    let telemetrySaveWarned = false;
 
     // ── MAP INIT (Яндекс.Карты API 2.1) ──────────────────────────
     ymaps.ready(function initMap() {
@@ -651,12 +673,20 @@
         clearAlert('trackAlert');
         const vId = getVehicleId();
         if (!vId) return;
+        if (!ROUTE_ID) {
+            showAlert('trackAlert', 'Для старта трекинга откройте карту со страницы маршрута (кнопка «Открыть трекинг») или добавьте routeId в адрес: /map?vehicleId=…&routeId=…', 'error');
+            return;
+        }
 
         setBtnTracking(true);
         setStatus('Запуск…', 'warning');
 
         try {
-            const session = await apiPost('/api/sessions', { vehicleId: vId, source: selectedSource });
+            const session = await apiPost('/api/sessions', {
+                vehicleId: vId,
+                source: selectedSource,
+                routeId: ROUTE_ID
+            });
             activeSession = session;
             pointsRecorded = 0;
 
@@ -675,11 +705,104 @@
             }
 
             isTracking = true;
+            telemetrySaveWarned = false;
             setStatus('Запись активна', 'active');
         } catch (e) {
             setBtnTracking(false);
             showAlert('trackAlert', 'Ошибка запуска: ' + e.message, 'error');
             setStatus('Ошибка', 'error');
+        }
+    }
+
+    async function continueTracking() {
+        clearAlert('trackAlert');
+        if (isTracking) {
+            showAlert('trackAlert', 'Запись уже идёт — сначала остановите её.', 'info');
+            return;
+        }
+        const vId = getVehicleId();
+        if (!vId) return;
+
+        switchTab('tracking');
+        setStatus('Поиск активной сессии…', 'warning');
+
+        try {
+            const sessions = await apiGet('/api/sessions?vehicleId=' + vId);
+            const active = (sessions || []).find(s => s.status === 'ACTIVE');
+            if (!active) {
+                setStatus('Не активен', '');
+                showAlert('trackAlert',
+                    'Нет активной сессии для этого транспорта. Нажмите «Начать запись» (нужен маршрут в URL).',
+                    'error');
+                return;
+            }
+            if (ROUTE_ID != null && active.routeId != null && Number(active.routeId) !== Number(ROUTE_ID)) {
+                setStatus('Не активен', '');
+                showAlert('trackAlert',
+                    'Активная сессия привязана к другому маршруту (#' + active.routeId + '). Откройте карту с нужным routeId или завершите ту сессию.',
+                    'error');
+                return;
+            }
+
+            setBtnTracking(true);
+            setStatus('Возобновление…', 'warning');
+
+            const session = await apiGet('/api/sessions/' + active.id);
+            const src = session.source === 'SIMULATOR' ? 'SIMULATOR' : 'BROWSER';
+            selectSource(src);
+
+            clearMap();
+            let points = [];
+            try {
+                points = await apiGet('/api/sessions/' + active.id + '/points') || [];
+            } catch (ignore) {
+                points = [];
+            }
+            points.sort((a, b) => new Date(a.recordedAt) - new Date(b.recordedAt));
+            routePoints = points.map(p => [p.latitude, p.longitude]);
+            redrawRoute();
+            pointsRecorded = points.length;
+            document.getElementById('pointsCount').textContent = String(pointsRecorded);
+
+            if (points.length > 0) {
+                const last = points[points.length - 1];
+                ymRemove(currentMarker);
+                currentMarker = new ymaps.Placemark([last.latitude, last.longitude], {
+                    hintContent: 'Текущая позиция',
+                    balloonContent: last.latitude.toFixed(5) + ', ' + last.longitude.toFixed(5)
+                }, {
+                    preset: 'islands#blueCircleDotIcon'
+                });
+                map.geoObjects.add(currentMarker);
+                document.getElementById('coordDisplay').textContent =
+                    last.latitude.toFixed(6) + ', ' + last.longitude.toFixed(6);
+                if (points.length >= 2) {
+                    fitToRoute();
+                } else {
+                    map.panTo([last.latitude, last.longitude], { duration: 400 });
+                }
+            }
+
+            activeSession = session;
+            document.getElementById('activeSessionDisplay').textContent = String(session.id);
+            document.getElementById('posSection').style.display = '';
+            document.getElementById('viewSessionLink').style.display = 'none';
+
+            if (src === 'BROWSER') {
+                startBrowserSource(vId, session.id);
+            } else {
+                startSimulatorSource(vId, session.id);
+            }
+            isTracking = true;
+            telemetrySaveWarned = false;
+            setStatus('Запись активна', 'active');
+            showAlert('trackAlert',
+                'Продолжаем сессию #' + session.id + (pointsRecorded > 0 ? ' (точек в базе: ' + pointsRecorded + ').' : '.'),
+                'success');
+        } catch (e) {
+            setBtnTracking(false);
+            setStatus('Ошибка', 'error');
+            showAlert('trackAlert', 'Не удалось продолжить: ' + e.message, 'error');
         }
     }
 
@@ -711,6 +834,7 @@
 
     function setBtnTracking(tracking) {
         document.getElementById('btnStart').classList.toggle('hidden', tracking);
+        document.getElementById('btnContinue').classList.toggle('hidden', tracking);
         document.getElementById('btnStop').classList.toggle('hidden', !tracking);
         const src1 = document.getElementById('srcBrowser');
         const src2 = document.getElementById('srcSimulator');
@@ -719,8 +843,6 @@
     }
 
     // ── BROWSER GEOLOCATION ───────────────────────────────────────
-    const GEO_POLL_MS = 5000;
-
     function startBrowserSource(vId, sessionId) {
         if (!navigator.geolocation) {
             showAlert('trackAlert', 'Геолокация не поддерживается этим браузером.', 'error');
@@ -731,7 +853,7 @@
         geoWatchId = navigator.geolocation.watchPosition(
             pos => onGeoSuccess(pos, vId, sessionId),
             err => onGeoError(err),
-            { enableHighAccuracy: true, maximumAge: 10000, timeout: 10000 }
+            GEO_WATCH_OPTIONS
         );
         // Polling fallback: if watchPosition hasn't fired recently, force a fresh fix
         geoPollTimer = setInterval(() => {
@@ -739,7 +861,7 @@
                 navigator.geolocation.getCurrentPosition(
                     pos => onGeoSuccess(pos, vId, sessionId),
                     err => onGeoError(err),
-                    { enableHighAccuracy: false, maximumAge: 20000, timeout: 8000 }
+                    GEO_FALLBACK_OPTIONS
                 );
             }
         }, GEO_POLL_MS);
@@ -758,14 +880,24 @@
 
     function onGeoError(err) {
         if (err.code === 1) {
-            // PERMISSION_DENIED — fatal, stop tracking
-            showAlert('trackAlert', 'Доступ к геолокации запрещён.', 'error');
-            stopTracking();
+            // PERMISSION_DENIED — do not finish session automatically; pause capture
+            pauseActiveCapture('Доступ к геолокации запрещён. Сессия не завершена: выдайте доступ и нажмите «Продолжить запись».');
         } else {
             // POSITION_UNAVAILABLE (2) or TIMEOUT (3) — transient, keep waiting
             setStatus('Ожидание GPS…', 'warning');
-            console.warn('Геолокация: временная ошибка:', err.message);
+            const code = err.code === 2 ? 'POSITION_UNAVAILABLE' : err.code === 3 ? 'TIMEOUT' : 'UNKNOWN';
+            const message = err.message || '(без текста от браузера)';
+            console.warn('Геолокация: временная ошибка [' + code + ']:', message);
         }
+    }
+
+    function pauseActiveCapture(message) {
+        stopBrowserSource();
+        stopSimulatorSource();
+        isTracking = false;
+        setBtnTracking(false);
+        setStatus('Пауза: нет геодоступа', 'warning');
+        showAlert('trackAlert', message, 'error');
     }
 
     async function onGeoSuccess(pos, vId, sessionId) {
@@ -777,8 +909,14 @@
             await sendTelemetry(vId, lat, lon, speedKmh, 'BROWSER', sessionId);
             updatePosition(lat, lon);
             if (speedKmh != null) document.getElementById('speedDisplay').textContent = speedKmh + ' км/ч';
+            telemetrySaveWarned = false;
         } catch (e) {
             console.error('Geo telemetry error:', e);
+            setStatus('GPS есть, ошибка отправки', 'warning');
+            if (!telemetrySaveWarned) {
+                showAlert('trackAlert', 'Координаты получены, но не удалось отправить точку на сервер. Запись продолжится автоматически.', 'error');
+                telemetrySaveWarned = true;
+            }
         }
     }
 

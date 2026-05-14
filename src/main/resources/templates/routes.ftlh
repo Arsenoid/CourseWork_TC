@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Blizzard Trans — Транспортная логистика</title>
+    <title>Route Tracer — Транспортная логистика</title>
     <link rel="stylesheet" href="/css/base.css">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <style>
@@ -452,7 +452,7 @@
         <div class="header">
             <div class="header-top">
                 <div class="logo">
-                    <h1>️🚚 Blizzard Trans</h1>
+                    <h1>️🚚 Route Tracer</h1>
                     <p>Транспортная логистика</p>
                 </div>
 
@@ -542,7 +542,7 @@
                 <!-- НЕ АВТОРИЗОВАН -->
                 <div class="unauth-card">
                     <div class="empty-icon">🔐</div>
-                    <h3>Добро пожаловать в Blizzard Trans</h3>
+                    <h3>Добро пожаловать в Route Tracer</h3>
                     <p>Войдите в систему, чтобы просматривать доступные маршруты</p>
                     <a href="/login" class="login-btn">Войти в систему →</a>
                 </div>
